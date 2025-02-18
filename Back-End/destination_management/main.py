@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
-from schemas import destinationSchemas
-from services import destinationServices
+from schemas import destinationSchemas, wishlistSchemas
+from services import destinationServices, wishlistServices
 from db import get_db
 from sqlalchemy.orm import Session
 
@@ -39,3 +39,13 @@ def delete_destination(id: int, db: Session = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=404, detail="Destination not found")
     return {"message": "Destination deleted successfully"}
+
+
+@app.post('/wishlist/', response_model=wishlistSchemas.WishList)
+def create_wishlist(wishlist: wishlistSchemas.WishListCreated, db: Session = Depends(get_db)):
+    return wishlistServices.create_wishlist(db, wishlist)
+
+
+@app.get('/wishlist/{touristId}', response_model=wishlistSchemas.WishList)
+def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
+    return wishlistServices.get_wishlist(db, touristId)
