@@ -1,4 +1,3 @@
-from models import destinationModels
 from sqlalchemy.orm import Session
 from schemas import destinationSchemas
 from models.destinationModels import Destinations
