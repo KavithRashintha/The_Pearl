@@ -18,3 +18,7 @@ def get_all_trip(db: Session):
 
 def get_trip_by_tourist_id(db: Session, tourist_id: int):
     return db.query(Trip).filter(Trip.touristId == tourist_id).all()
+
+
+def get_trip_by_tour_guide_id(db: Session, tour_guide_id: int):
+    return db.query(Trip).filter(Trip.tourGuideId == tour_guide_id).all()
