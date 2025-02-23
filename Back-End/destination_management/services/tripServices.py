@@ -14,3 +14,7 @@ def create_trip(db: Session, data: tripSchemas.TripCreated):
 
 def get_all_trip(db: Session):
     return db.query(Trip).all()
+
+
+def get_trip_by_tourist_id(db: Session, tourist_id: int):
+    return db.query(Trip).filter(Trip.touristId == tourist_id).all()

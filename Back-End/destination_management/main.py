@@ -90,3 +90,8 @@ def create_trip(trip: tripSchemas.TripCreated, db: Session = Depends(get_db)):
 @app.get("/trips/", response_model=list[tripSchemas.Trip])
 def get_all_trips(db: Session = Depends(get_db)):
     return tripServices.get_all_trip(db)
+
+
+@app.get("/trips/trip/{touristId}", response_model=list[tripSchemas.Trip])
+def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
+    return tripServices.get_trip_by_tourist_id(db, touristId)
