@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
-from schemas import destinationSchemas, wishlistSchemas
-from services import destinationServices, wishlistServices
+from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas
+from services import destinationServices, wishlistServices, selectedDestinationsServices
 from db import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -58,3 +58,8 @@ def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], 
     if not updated_wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_wishlist
+
+
+@app.post("/selected-destinations/", response_model=selectedDestinationsSchemas.SelectedDestinations)
+def create_selected_destinations_list(selectedDestinations: selectedDestinationsSchemas.SelectedDestinationsCreated, db: Session = Depends(get_db)):
+    return selectedDestinationsServices.create_selected_destinations_list(db, selectedDestinations)
