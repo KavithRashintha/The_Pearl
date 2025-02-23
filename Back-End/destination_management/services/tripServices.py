@@ -10,3 +10,7 @@ def create_trip(db: Session, data: tripSchemas.TripCreated):
     db.commit()
     db.refresh(new_trip)
     return new_trip
+
+
+def get_all_trip(db: Session):
+    return db.query(Trip).all()
