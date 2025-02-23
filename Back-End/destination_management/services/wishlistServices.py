@@ -22,4 +22,6 @@ def update_wishlist(db: Session, wishlist_id: int, new_destinations: List[str]):
     if wishlist:
         wishlist.destinations = new_destinations
         db.commit()
-        db.refresh()
+        db.refresh(wishlist)
+        return wishlist
+    return None

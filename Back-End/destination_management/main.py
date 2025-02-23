@@ -3,6 +3,7 @@ from schemas import destinationSchemas, wishlistSchemas
 from services import destinationServices, wishlistServices
 from db import get_db
 from sqlalchemy.orm import Session
+from typing import List
 
 app = FastAPI()
 
@@ -49,3 +50,11 @@ def create_wishlist(wishlist: wishlistSchemas.WishListCreated, db: Session = Dep
 @app.get('/wishlist/{touristId}', response_model=wishlistSchemas.WishList)
 def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
     return wishlistServices.get_wishlist(db, touristId)
+
+
+@app.patch("/wishlist/{wishlist_id}/update-destinations", response_model=wishlistSchemas.WishList)
+def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], db: Session = Depends(get_db)):
+    updated_wishlist = wishlistServices.update_wishlist(db, wishlist_id, new_destinations)
+    if not updated_wishlist:
+        raise HTTPException(status_code=404, detail="Wishlist not found")
+    return updated_wishlist
