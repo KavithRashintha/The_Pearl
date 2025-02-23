@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
-from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas
-from services import destinationServices, wishlistServices, selectedDestinationsServices
+from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas, tripSchemas
+from services import destinationServices, wishlistServices, selectedDestinationsServices, tripServices
 from db import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -71,7 +71,8 @@ def get_selected_destinations_list(touristId: int, db: Session = Depends(get_db)
     return selectedDestinationsServices.get_selected_destinations_list(db, touristId)
 
 
-@app.patch("/selected-destinations/{selected_destination_list_id}/updated-selected-destinations", response_model=selectedDestinationsSchemas.SelectedDestinations)
+@app.patch("/selected-destinations/{selected_destination_list_id}/updated-selected-destinations",
+           response_model=selectedDestinationsSchemas.SelectedDestinations)
 def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[str],
                                       db: Session = Depends(get_db)):
     updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id,
@@ -79,3 +80,8 @@ def update_selected_destinations_list(selected_destination_list_id: int, new_sel
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
+
+
+@app.post("/trips/", response_model=tripSchemas.Trip)
+def create_trip(trip: tripSchemas.TripCreated, db: Session = Depends(get_db)):
+    return tripServices.create_trip(db, trip)
