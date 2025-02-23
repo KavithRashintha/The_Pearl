@@ -61,5 +61,11 @@ def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], 
 
 
 @app.post("/selected-destinations/", response_model=selectedDestinationsSchemas.SelectedDestinations)
-def create_selected_destinations_list(selectedDestinations: selectedDestinationsSchemas.SelectedDestinationsCreated, db: Session = Depends(get_db)):
+def create_selected_destinations_list(selectedDestinations: selectedDestinationsSchemas.SelectedDestinationsCreated,
+                                      db: Session = Depends(get_db)):
     return selectedDestinationsServices.create_selected_destinations_list(db, selectedDestinations)
+
+
+@app.get("/selected-destinations/{touristId}", response_model=selectedDestinationsSchemas.SelectedDestinations)
+def get_selected_destinations_list(touristId: int, db: Session = Depends(get_db)):
+    return selectedDestinationsServices.get_selected_destinations_list(db, touristId)

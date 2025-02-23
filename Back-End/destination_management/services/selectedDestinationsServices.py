@@ -10,3 +10,7 @@ def create_selected_destinations_list(db: Session, data: selectedDestinationsSch
     db.commit()
     db.refresh(new_list)
     return new_list
+
+
+def get_selected_destinations_list(db: Session, tourist_id: int):
+    return db.query(SelectedDestinations).filter(SelectedDestinations.touristId == tourist_id).first()
