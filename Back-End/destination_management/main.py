@@ -103,8 +103,16 @@ def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
 
 
 @app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
-def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate,  db: Session = Depends(get_db)):
-    updated_trip = tripServices.update_trip_status(db, tripId, status_update)
-    if not updated_trip:
+def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate, db: Session = Depends(get_db)):
+    updated_trip_status = tripServices.update_trip_status(db, tripId, status_update)
+    if not updated_trip_status:
         raise HTTPException(status_code=404, detail="Trip not found")
-    return updated_trip
+    return updated_trip_status
+
+
+@app.patch('/trips/{tripId}/update-payment-status', response_model=tripSchemas.Trip)
+def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaymentStatusUpdate, db: Session = Depends(get_db)):
+    updated_payment_status = tripServices.update_trip_payment_status(db, tripId, payment_update)
+    if not updated_payment_status:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return updated_payment_status

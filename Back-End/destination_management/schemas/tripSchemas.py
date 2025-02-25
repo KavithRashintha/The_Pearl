@@ -22,6 +22,10 @@ class TripStatusUpdate(BaseModel):
     tripStatus: str
 
 
+class TripPaymentStatusUpdate(BaseModel):
+    paymentStatus: str
+
+
 class Trip(TripBase):
     id: int
 
