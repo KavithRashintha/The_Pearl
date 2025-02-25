@@ -11,3 +11,8 @@ app = FastAPI()
 @app.post("/trips/add", response_model=tripSchemas.Trip)
 def create_trip(trip: tripSchemas.TripCreated, db: Session = Depends(get_db)):
     return tripServices.create_trip(db, trip)
+
+
+@app.get("/trips/", response_model=list[tripSchemas.Trip])
+def get_all_trips(db: Session = Depends(get_db)):
+    return tripServices.get_all_trip(db)
