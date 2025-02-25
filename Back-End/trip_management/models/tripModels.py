@@ -16,3 +16,4 @@ class Trip(Base):
     tripStatus = Column(String)
     tripPayment = Column(Float)
     paymentStatus = Column(String)
+
