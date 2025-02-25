@@ -44,3 +44,14 @@ def update_trip_payment_status(db: Session, tripId: int, payment_update: tripSch
         db.refresh(trip)
         return trip
     return None
+
+
+def update_trip_payment_status(db: Session, tripId: int, payment_update: tripSchemas.TripPaymentStatusUpdate):
+    trip = db.query(Trip).filter(Trip.id == tripId).first()
+
+    if trip:
+        trip.paymentStatus = payment_update.paymentStatus
+        db.commit()
+        db.refresh(trip)
+        return trip
+    return None
