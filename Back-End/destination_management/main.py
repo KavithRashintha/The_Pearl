@@ -100,3 +100,11 @@ def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
 @app.get("/trips/trip-by-tour-guide/{tourGuideId}", response_model=list[tripSchemas.Trip])
 def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
     return tripServices.get_trip_by_tour_guide_id(db, tourGuideId)
+
+
+@app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
+def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate,  db: Session = Depends(get_db)):
+    updated_trip = tripServices.update_trip_status(db, tripId, status_update)
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return updated_trip

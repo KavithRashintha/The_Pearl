@@ -22,3 +22,14 @@ def get_trip_by_tourist_id(db: Session, tourist_id: int):
 
 def get_trip_by_tour_guide_id(db: Session, tour_guide_id: int):
     return db.query(Trip).filter(Trip.tourGuideId == tour_guide_id).all()
+
+
+def update_trip_status(db: Session, tripId: int, status_update: tripSchemas.TripStatusUpdate):
+    trip = db.query(Trip).filter(Trip.id == tripId).first()
+
+    if trip:
+        trip.tripStatus = status_update.tripStatus
+        db.commit()
+        db.refresh(trip)
+        return trip
+    return None

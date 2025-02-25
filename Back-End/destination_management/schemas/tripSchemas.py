@@ -18,6 +18,10 @@ class TripCreated(TripBase):
     pass
 
 
+class TripStatusUpdate(BaseModel):
+    tripStatus: str
+
+
 class Trip(TripBase):
     id: int
 
