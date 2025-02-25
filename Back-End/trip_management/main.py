@@ -21,3 +21,8 @@ def get_all_trips(db: Session = Depends(get_db)):
 @app.get("/trips/trip-by-tourist/{touristId}", response_model=list[tripSchemas.Trip])
 def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
     return tripServices.get_trip_by_tourist_id(db, touristId)
+
+
+@app.get("/trips/trip-by-tour-guide/{tourGuideId}", response_model=list[tripSchemas.Trip])
+def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
+    return tripServices.get_trip_by_tour_guide_id(db, tourGuideId)
