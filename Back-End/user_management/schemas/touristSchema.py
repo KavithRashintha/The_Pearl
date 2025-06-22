@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class TouristBase(BaseModel):
-    passport_number: str
+    passportNumber: str
     country: str
     address: str
     birthDay: str

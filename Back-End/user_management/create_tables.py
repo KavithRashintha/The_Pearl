@@ -1,5 +1,5 @@
 from db import engine, Base
-from models import userModels, touristModel, tourGuideModels
+from models import userModels, touristModel, tourGuideModels, adminModels
 
 
 def create_tables():

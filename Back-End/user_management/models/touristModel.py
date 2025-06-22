@@ -7,7 +7,7 @@ class Tourist(Base):
     __tablename__ = "tourists"
 
     id = Column(Integer, primary_key=True, index=True)
-    userIdd = Column(Integer, ForeignKey("users.id"), unique=True)
+    userId = Column(Integer, ForeignKey("users.id"), unique=True)
     passportNumber = Column(String)
     country = Column(String)
     address = Column(String)

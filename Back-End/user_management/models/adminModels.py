@@ -9,4 +9,4 @@ class Admin(Base):
     id = Column(Integer, primary_key=True, index=True)
     userId = Column(Integer, ForeignKey("users.id"), unique=True)
 
-    user = relationship("User", back_populates="tour_guide")
+    user = relationship("User", back_populates="admin")
