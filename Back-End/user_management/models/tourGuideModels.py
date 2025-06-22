@@ -7,8 +7,11 @@ class TourGuide(Base):
     __tablename__ = "tour_guides"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    nic = Column(String, unique=True, nullable=False)
-    telephone = Column(String, nullable=False)
+    userId = Column(Integer, ForeignKey("users.id"), unique=True)
+    nic = Column(String, unique=True)
+    telephone = Column(String)
+    address = Column(String)
+    licenseNumber = Column(String)
+    reviewCount = Column(Integer)
 
     user = relationship("User", back_populates="tour_guide")
