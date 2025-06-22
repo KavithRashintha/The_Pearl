@@ -1,13 +1,67 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from db import engine, Base, get_db
+from models import userModels
+from schemas import tokenSchema, touristSchema, userSchema, tourGuideSchema
+from services import authService, userService
+from utils.hash import verify_password
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI(
+    title="User Management API",
+    description="Handles user registration, authentication, and profile management for the Sri Lanka Tourism App.",
+    version="1.0.0",
+)
+@app.get("/", tags=["Root"])
+def read_root():
+    """A simple welcome message for the API root."""
+    return {"message": "Welcome to the User Management Service! 👤"}
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.post("/auth/register/tourist", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
+def register_new_tourist(
+        tourist_reg_data: touristSchema.TouristRegistration,
+        db: Session = Depends(get_db)
+):
+    """
+    Registers a new user with a 'tourist' role and creates their associated tourist profile.
+    This single endpoint handles both user creation and profile creation.
+    """
+    db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
+    return {"message": f"Tourist '{db_user.name}' created successfully."}
 
+@app.post("/auth/token", response_model=tokenSchema.Token, tags=["Authentication"])
+def login_for_access_token(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: Session = Depends(get_db)
+):
+    """
+    Authenticates a user with email (as username) and password.
+    Returns a JWT access token upon successful authentication.
+    """
+    # Authenticate the user
+    user = userService.get_user_by_email(db, email=form_data.username)
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+    access_token = authService.create_access_token(
+        data={"sub": user.email, "role": user.role}
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/users/me", response_model=userSchema.UserDetails, tags=["Users"])
+def read_current_user_profile(
+        current_user: userModels.User = Depends(authService.get_current_user)
+):
+    """
+    Fetches the complete profile for the currently authenticated user.
+    The JWT token in the request header determines which user's data is returned.
+    The response will include nested tourist or tour guide details if they exist.
+    """
+    return current_user
