@@ -23,4 +23,4 @@ class AdminRegistration(BaseModel):
     name: str
     email: EmailStr
     password: str
-    role: str = "tourist"
+    role: str = "admin"

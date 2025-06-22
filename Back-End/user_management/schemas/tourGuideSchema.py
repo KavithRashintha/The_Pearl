@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class TourGuideBase(BaseModel):
@@ -21,7 +21,7 @@ class TourGuide(TourGuideBase):
 
 class TourGuideRegistration(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     role: str = "tour_guide"
     password: str
     nic: str

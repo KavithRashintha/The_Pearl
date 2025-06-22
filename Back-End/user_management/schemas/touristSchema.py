@@ -1,5 +1,4 @@
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class TouristBase(BaseModel):
@@ -21,7 +20,7 @@ class Tourist(TouristBase):
 
 class TouristRegistration(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     role: str = "tourist"
     password: str
     passportNumber: str

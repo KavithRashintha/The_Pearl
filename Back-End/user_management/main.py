@@ -9,11 +9,8 @@ from utils.hash import verify_password
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="User Management API",
-    description="Handles user registration, authentication, and profile management for the Sri Lanka Tourism App.",
-    version="1.0.0",
-)
+app = FastAPI()
+
 @app.get("/", tags=["Root"])
 def read_root():
     """A simple welcome message for the API root."""
@@ -24,10 +21,6 @@ def register_new_tourist(
         tourist_reg_data: touristSchema.TouristRegistration,
         db: Session = Depends(get_db)
 ):
-    """
-    Registers a new user with a 'tourist' role and creates their associated tourist profile.
-    This single endpoint handles both user creation and profile creation.
-    """
     db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
     return {"message": f"Tourist '{db_user.name}' created successfully."}
 
@@ -36,10 +29,6 @@ def register_new_tourist(
         tourist_reg_data: touristSchema.TouristRegistration,
         db: Session = Depends(get_db)
 ):
-    """
-    Registers a new user with a 'tourist' role and creates their associated tourist profile.
-    This single endpoint handles both user creation and profile creation.
-    """
     db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
     return {"message": f"Tourist '{db_user.name}' created successfully."}
 
@@ -49,10 +38,6 @@ def register_new_guide(
         guide_reg_data: tourGuideSchema.TourGuideRegistration,
         db: Session = Depends(get_db)
 ):
-    """
-    Registers a new user with a 'tour_guide' role and creates their associated tour guide profile.
-    This single endpoint handles both user creation and profile creation.
-    """
     db_user = authService.register_tour_guide(db, tour_guide_reg=guide_reg_data)
     return {"message": f"Tour Guide '{db_user.name}' created successfully."}
 
@@ -61,10 +46,6 @@ def register_new_admin(
         admin_reg_data: adminSchema.AdminRegistration,
         db: Session = Depends(get_db)
 ):
-    """
-    Registers a new user with an 'admin' role and creates their associated admin profile.
-    This endpoint should be protected in production.
-    """
     db_user = authService.register_admin(db, admin_reg=admin_reg_data)
     return {"message": f"Admin '{db_user.name}' created successfully."}
 
@@ -74,11 +55,6 @@ def login_for_access_token(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db)
 ):
-    """
-    Authenticates a user with email (as username) and password.
-    Returns a JWT access token upon successful authentication.
-    """
-    # Authenticate the user
     user = userService.get_user_by_email(db, email=form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -97,9 +73,4 @@ def login_for_access_token(
 def read_current_user_profile(
         current_user: userModels.User = Depends(authService.get_current_user)
 ):
-    """
-    Fetches the complete profile for the currently authenticated user.
-    The JWT token in the request header determines which user's data is returned.
-    The response will include nested tourist or tour guide details if they exist.
-    """
     return current_user
