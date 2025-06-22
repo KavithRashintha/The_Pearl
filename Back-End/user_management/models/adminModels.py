@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 
 class Admin(Base):
-    __tablename__ = "admin"
+    __tablename__ = "admins"
 
     id = Column(Integer, primary_key=True, index=True)
     userId = Column(Integer, ForeignKey("users.id"), unique=True)
