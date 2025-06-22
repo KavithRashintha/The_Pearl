@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from db import engine, Base, get_db
 from models import userModels
-from schemas import tokenSchema, touristSchema, userSchema, tourGuideSchema
+from schemas import tokenSchema, touristSchema, userSchema, adminSchema, tourGuideSchema
 from services import authService, userService
 from utils.hash import verify_password
 
@@ -30,6 +30,44 @@ def register_new_tourist(
     """
     db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
     return {"message": f"Tourist '{db_user.name}' created successfully."}
+
+@app.post("/auth/register/tourist", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
+def register_new_tourist(
+        tourist_reg_data: touristSchema.TouristRegistration,
+        db: Session = Depends(get_db)
+):
+    """
+    Registers a new user with a 'tourist' role and creates their associated tourist profile.
+    This single endpoint handles both user creation and profile creation.
+    """
+    db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
+    return {"message": f"Tourist '{db_user.name}' created successfully."}
+
+# Tour Guide Endpoints
+@app.post("/auth/register/guide", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
+def register_new_guide(
+        guide_reg_data: tourGuideSchema.TourGuideRegistration,
+        db: Session = Depends(get_db)
+):
+    """
+    Registers a new user with a 'tour_guide' role and creates their associated tour guide profile.
+    This single endpoint handles both user creation and profile creation.
+    """
+    db_user = authService.register_tour_guide(db, tour_guide_reg=guide_reg_data)
+    return {"message": f"Tour Guide '{db_user.name}' created successfully."}
+
+@app.post("/auth/register/admin", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
+def register_new_admin(
+        admin_reg_data: adminSchema.AdminRegistration,
+        db: Session = Depends(get_db)
+):
+    """
+    Registers a new user with an 'admin' role and creates their associated admin profile.
+    This endpoint should be protected in production.
+    """
+    db_user = authService.register_admin(db, admin_reg=admin_reg_data)
+    return {"message": f"Admin '{db_user.name}' created successfully."}
+
 
 @app.post("/auth/token", response_model=tokenSchema.Token, tags=["Authentication"])
 def login_for_access_token(

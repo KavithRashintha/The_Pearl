@@ -62,7 +62,7 @@ def register_tour_guide(db: Session, tour_guide_reg: tourGuideSchema.TourGuideRe
     new_user = userModels.User(
         name=tour_guide_reg.name,
         email=tour_guide_reg.email,
-        role="tour_guide",  # Force role here
+        role="tour_guide",
         hashed_password=hash_password(tour_guide_reg.password)
     )
     db.add(new_user)
@@ -71,7 +71,7 @@ def register_tour_guide(db: Session, tour_guide_reg: tourGuideSchema.TourGuideRe
 
     # Create Tour Guide profile
     new_guide = tourGuideModels.TourGuide(
-        user_id=new_user.id,
+        userId=new_user.id,
         nic=tour_guide_reg.nic,
         telephone=tour_guide_reg.telephone
     )
@@ -101,7 +101,7 @@ def register_admin(db: Session, admin_reg):
 
     # Create Admin profile
     new_admin = adminModels.Admin(
-        user_id=new_user.id
+        userId=new_user.id
     )
     db.add(new_admin)
     db.commit()
