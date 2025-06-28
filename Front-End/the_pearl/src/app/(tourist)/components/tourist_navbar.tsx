@@ -16,7 +16,7 @@ export default function TouristNavBar() {
 
     return (
         <nav className="bg-purple-100 py-4">
-            <div className="container mx-auto flex justify-between items-center pl-6 pr-16">
+            <div className="container mx-auto flex justify-between items-center pl-6 pr-10">
                 <Link href="/" className="text-xl font-bold text-blue-600">
                     The Pearl
                 </Link>

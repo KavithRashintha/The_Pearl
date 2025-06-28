@@ -1,5 +1,7 @@
+import TouristHeroSection from "@/app/(tourist)/components/tourist_hero_section";
+
 export default function Home(){
     return(
-        <h1>Hello World</h1>
+        <TouristHeroSection/>
     )
 }
