@@ -14,7 +14,7 @@ export default function TouristHeroSection(){
                     />
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-l from-white/50 via-white/25 to-transparent h-[74vh] w-[94vw] mt-5 ml-2 rounded-xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-white/40 via-white/25 to-transparent h-[74vh] w-[94vw] mt-5 ml-2 rounded-xl"></div>
 
                 <div className="relative z-10 h-full flex items-center pr-24">
                     <div className="container mx-auto px-4">

@@ -16,11 +16,11 @@ export default function TouristNavBar() {
 
     return (
         <nav className="bg-purple-100 py-4">
-            <div className="container mx-auto flex justify-between items-center pl-6 pr-10">
-                <Link href="/" className="text-xl font-bold text-blue-600">
+            <div className="container mx-auto flex justify-between items-center pl-6 pr-12">
+                <Link href="/" className="text-lg font-bold text-blue-600">
                     The Pearl
                 </Link>
-                <div className="flex space-x-12">
+                <div className="flex space-x-14 text-sm">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
