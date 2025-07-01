@@ -14,7 +14,7 @@ export default function TouristHeroSection(){
                     />
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-l from-white/40 via-white/25 to-transparent h-[74vh] w-[94vw] mt-5 ml-2 rounded-xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-white/40 via-white/25 to-transparent h-[75vh] w-[93vw] mt-5 ml-2 rounded-xl"></div>
 
                 <div className="relative z-10 h-full flex items-center pr-24">
                     <div className="container mx-auto px-4">
@@ -25,7 +25,7 @@ export default function TouristHeroSection(){
                             <p className="text-xl mb-8 text-white">
                                 The Peri - Your Best Travel Guide
                             </p>
-                            <button className="bg-[#7119E6] hover:bg-[#7119D1] text-white font-semibold py-3 px-6 rounded-xl text-md transition">
+                            <button className="bg-royal-purple hover:bg-royal-purple-hover text-white font-semibold py-3 px-6 rounded-xl text-md transition">
                                 Explore More
                             </button>
                         </div>
