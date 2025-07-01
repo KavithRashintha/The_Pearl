@@ -1,10 +1,12 @@
 import TouristHeroSection from "@/app/(tourist)/components/tourist_hero_section";
 import Image from 'next/image';
+import ImageCardsCarousel from "@/app/(tourist)/components/image_cards_carousel";
 export default function Home(){
     return(
         <div>
             <TouristHeroSection/>
 
+            {/*Who we are section*/}
             <div className="flex flex-col justify-center items-center pt-10 pb-18">
                 <div className="pb-16">
                     <h1 className="font-semibold text-4xl text-royal-purple">Who We Are ?</h1>
@@ -27,6 +29,14 @@ export default function Home(){
                             priority
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* Explore the beauty section */}
+            <div className="w-full bg-white pt-8 pb-18 px-10">
+                <div className="flex flex-col justify-center items-center px-4">
+                    <h1 className="font-semibold text-4xl text-royal-purple mb-6 mb-20">Explore The Beauty</h1>
+                    <ImageCardsCarousel />
                 </div>
             </div>
         </div>
