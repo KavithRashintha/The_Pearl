@@ -1,6 +1,7 @@
 import TouristHeroSection from "@/app/(tourist)/components/tourist_hero_section";
 import Image from 'next/image';
 import ImageCardsCarousel from "@/app/(tourist)/components/image_cards_carousel";
+import Link from "next/link";
 export default function Home(){
     return(
         <div>
@@ -37,6 +38,7 @@ export default function Home(){
                 <div className="flex flex-col justify-center items-center px-4">
                     <h1 className="font-semibold text-4xl text-royal-purple mb-6 mb-20">Explore The Beauty</h1>
                     <ImageCardsCarousel />
+                    <Link href="/destinations" className="underline text-sm mb-4">Explore More</Link>
                 </div>
             </div>
         </div>
