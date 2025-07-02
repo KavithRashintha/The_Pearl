@@ -17,11 +17,11 @@ export default function TouristFooter() {
 
                 <div className="flex items-center space-x-4">
                     <Mail size={20} />
-                    <Phone size={20} />
                     <Facebook size={20} />
                     <Youtube size={20} />
                     <Twitter size={20} />
-                    <span className="text-sm font-medium">+94 077 6438907</span>
+                    <Phone size={20} className="mr-1" />
+                    <span className="text-sm font-medium pb-2">- 94 077 6438907</span>
                 </div>
             </div>
         </footer>
