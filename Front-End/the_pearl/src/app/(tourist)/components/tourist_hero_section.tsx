@@ -1,6 +1,15 @@
+'use client';
+
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function TouristHeroSection(){
+    const router = useRouter();
+
+    const handleClick = () => {
+        router.push('/destinations');
+    }
+
     return(
         <div className="p-8">
             <section className="relative h-[80vh] w-full overflow-hidden p-4 rounded-2xl">
@@ -25,7 +34,7 @@ export default function TouristHeroSection(){
                             <p className="text-xl mb-8 text-white">
                                 The Peri - Your Best Travel Guide
                             </p>
-                            <button className="bg-royal-purple hover:bg-royal-purple-hover text-white font-semibold py-3 px-6 rounded-xl text-md transition">
+                            <button className="bg-royal-purple hover:bg-royal-purple-hover text-white font-semibold py-3 px-6 rounded-xl text-md transition" onClick={handleClick}>
                                 Explore More
                             </button>
                         </div>
