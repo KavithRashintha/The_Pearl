@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -74,3 +75,11 @@ def read_current_user_profile(
         current_user: userModels.User = Depends(authService.get_current_user)
 ):
     return current_user
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8001,
+        reload=True
+    )

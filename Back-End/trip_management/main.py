@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
 from schemas import tripSchemas
 from services import tripServices
@@ -43,3 +44,12 @@ def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaym
     if not updated_payment_status:
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_payment_status
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8003,
+        reload=True
+    )
