@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import DestinationCard from "@/app/(tourist)/components/destination_card";
+import DestinationCard from "@/app/tourist/components/destination_card";
 
 type Destination = {
     id: number;
