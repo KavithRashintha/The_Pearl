@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    images: {
+        domains: [
+            'upload.wikimedia.org',
+            'www.tourism.cp.gov.lk',
+        ],
+    },
 };
 
 export default nextConfig;

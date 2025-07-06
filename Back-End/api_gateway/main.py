@@ -1,13 +1,7 @@
 from fastapi import FastAPI
+from services import destinations_service, trip_service, user_service
 
 app = FastAPI()
 
+app.include_router(destinations_service.router, prefix="/api/destinations", tags=["Destinations"])
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
