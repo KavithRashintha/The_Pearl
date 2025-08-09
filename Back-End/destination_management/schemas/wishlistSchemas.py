@@ -4,7 +4,7 @@ from typing import List
 
 class WishListBase(BaseModel):
     touristId: int
-    destinations: List[str]
+    destinations: List[int]
 
 
 class WishListCreated(WishListBase):

@@ -8,7 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Add CORS middleware here ▼
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -62,7 +61,7 @@ def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/wishlist/{wishlist_id}/update-destinations", response_model=wishlistSchemas.WishList)
-def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], db: Session = Depends(get_db)):
+def update_wishlist_destinations(wishlist_id: int, new_destinations: List[int], db: Session = Depends(get_db)):
     updated_wishlist = wishlistServices.update_wishlist(db, wishlist_id, new_destinations)
     if not updated_wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useState } from 'react';
 
 type DestinationCardProps = {
     id: number;
@@ -13,16 +14,41 @@ type DestinationCardProps = {
 };
 
 export default function DestinationCard({id, name, image, onAddToItinerary}: DestinationCardProps) {
-    const handleAddClick = (e: React.MouseEvent) => {
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleAddClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        onAddToItinerary(id);
+        setIsAdding(true);
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    //'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    touristId: 1,
+                    destinations: [id]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add to wishlist');
+            }
+
+            onAddToItinerary(id);
+        } catch (error) {
+            console.error('Error adding to wishlist:', error);
+        } finally {
+            setIsAdding(false);
+        }
     };
 
     return (
         <Link href={`/tourist/destinations/${id}`} passHref>
             <div className="relative group overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
-
                 <div className="relative h-64 w-full">
                     <Image
                         src={image}
@@ -33,7 +59,6 @@ export default function DestinationCard({id, name, image, onAddToItinerary}: Des
                     />
                 </div>
 
-                
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                     <div className="flex justify-between items-center">
                         <h3 className="text-white font-semibold text-xl">{name}</h3>
@@ -41,8 +66,9 @@ export default function DestinationCard({id, name, image, onAddToItinerary}: Des
                             onClick={handleAddClick}
                             className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
                             aria-label={`Add ${name} to itinerary`}
+                            disabled={isAdding}
                         >
-                            <PlusIcon className="h-5 w-5 text-white" />
+                            <PlusIcon className={`h-5 w-5 text-white ${isAdding ? 'animate-pulse' : ''}`} />
                         </button>
                     </div>
                 </div>
