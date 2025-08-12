@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { notFound, useParams } from 'next/navigation';
-import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 interface Destination {
     id: number;
@@ -35,30 +34,25 @@ async function getDestination(id: number): Promise<Destination | null> {
     }
 }
 
-export default function DestinationPage() {
+export default function DestinationPageWrapper({ params }: { params: { destinationId: string } }) {
     const [isAdding, setIsAdding] = useState(false);
     const [destination, setDestination] = useState<Destination | null>(null);
-    const params = useParams();
-    const destinationId = params.destinationId as string;
 
-    // Fetch destination data
-    useEffect(() => {
-        if (!destinationId) return;
-
-        const fetchDestination = async () => {
-            const data = await getDestination(Number(destinationId));
+    // Load destination on mount
+    useState(() => {
+        (async () => {
+            if (!params.destinationId) return;
+            const data = await getDestination(Number(params.destinationId));
             if (!data) {
-                return <div>Destination not found.</div>;
+                notFound();
+            } else {
+                setDestination(data);
             }
-            setDestination(data);
-        };
+        })();
+    });
 
-        fetchDestination();
-    }, [destinationId]);
-
-    const handleAddToDreamList = async () => {
+    const handleAddClick = async () => {
         if (!destination) return;
-
         setIsAdding(true);
 
         try {
@@ -68,22 +62,19 @@ export default function DestinationPage() {
                 const wishlistData = await wishlistResponse.json();
 
                 if (!wishlistData) {
+                    // Create new wishlist
                     const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             touristId: 1,
                             destinations: [destination.id]
                         })
                     });
 
-                    if (!response.ok) {
-                        throw new Error('Failed to create wishlist');
-                    }
-                    toast.success(`${destination.name} added to your Dream List!`);
+                    if (!response.ok) throw new Error('Failed to add to wishlist');
                 } else {
+                    // Update existing wishlist
                     const destinations: number[] = wishlistData.destinations || [];
                     const wishlistId = wishlistData.id;
 
@@ -93,27 +84,22 @@ export default function DestinationPage() {
                             `http://127.0.0.1:8000/wishlist/${wishlistId}/update-destinations`,
                             {
                                 method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
+                                headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(updatedDestinations)
                             }
                         );
 
-                        if (!response.ok) {
-                            throw new Error('Failed to update wishlist');
-                        }
-                        toast.success(`${destination.name} added to your Dream List!`);
+                        if (!response.ok) throw new Error('Failed to update wishlist');
                     } else {
-                        toast.info(`${destination.name} is already in your Dream List`);
+                        console.log(`Destination ${destination.id} already exists in wishlist`);
                     }
                 }
             } else {
                 throw new Error('Failed to get the wishlist');
             }
+
         } catch (error) {
-            console.error('Error updating wishlist:', error);
-            toast.error(`Failed to add ${destination.name} to Dream List`);
+            console.error('Error adding to wishlist:', error);
         } finally {
             setIsAdding(false);
         }
@@ -129,7 +115,6 @@ export default function DestinationPage() {
                 <h1 className="text-4xl font-bold text-gray-900 mt-2 text-royal-purple">
                     {destination.name}
                 </h1>
-
                 <hr className="border-gray-300 w-full max-w-[98%] border-t-2 my-6 mb-12"/>
             </div>
 
@@ -159,8 +144,8 @@ export default function DestinationPage() {
 
                     <div className="flex flex-wrap gap-4 mt-8">
                         <button
-                            onClick={handleAddToDreamList}
-                            className="px-6 py-3 bg-royal-purple text-white rounded-lg hover:bg-purple-700 transition-colors"
+                            className="px-6 py-3 bg-royal-purple text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                            onClick={handleAddClick}
                             disabled={isAdding}
                         >
                             {isAdding ? 'Adding...' : 'Add to Dream List'}
