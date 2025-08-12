@@ -5,6 +5,7 @@ from db import get_db
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 app = FastAPI()
 
@@ -55,7 +56,7 @@ def create_wishlist(wishlist: wishlistSchemas.WishListCreated, db: Session = Dep
     return wishlistServices.create_wishlist(db, wishlist)
 
 
-@app.get('/wishlist/{touristId}', response_model=wishlistSchemas.WishList)
+@app.get('/wishlist/{touristId}', response_model=Optional[wishlistSchemas.WishList])
 def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
     return wishlistServices.get_wishlist(db, touristId)
 

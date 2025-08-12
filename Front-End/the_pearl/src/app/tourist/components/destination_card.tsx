@@ -13,7 +13,7 @@ type DestinationCardProps = {
     onAddToItinerary: (id: number) => void;
 };
 
-export default function DestinationCard({id, name, image, onAddToItinerary}: DestinationCardProps) {
+export default function DestinationCard({ id, name, image, onAddToItinerary }: DestinationCardProps) {
     const [isAdding, setIsAdding] = useState(false);
 
     const handleAddClick = async (e: React.MouseEvent) => {
@@ -22,20 +22,55 @@ export default function DestinationCard({id, name, image, onAddToItinerary}: Des
         setIsAdding(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    //'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    touristId: 1,
-                    destinations: [id]
-                })
-            });
+            const wishlistResponse = await fetch('http://127.0.0.1:8000/wishlist/1');
 
-            if (!response.ok) {
-                throw new Error('Failed to add to wishlist');
+            if (wishlistResponse.ok) {
+                const wishlistData = await wishlistResponse.json();
+
+                if(!wishlistData){
+                    const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            touristId: 1,
+                            destinations: [id]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to add to wishlist');
+                    }
+                }else{
+                    const destinations: number[] = wishlistData.destinations || [];
+                    const wishlistId = wishlistData.id;
+
+                    let updatedDestinations = destinations.includes(id)
+                        ? destinations
+                        : [...destinations, id];
+
+                    if (!destinations.includes(id)) {
+                        const response = await fetch(
+                            `http://127.0.0.1:8000/wishlist/${wishlistId}/update-destinations`,
+                            {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(updatedDestinations)
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error('Failed to update wishlist');
+                        }
+                    } else {
+                        console.log(`Destination ${id} already exists in wishlist`);
+                    }
+                }
+            } else {
+                throw new Error('Failed to get the wishlist');
             }
 
             onAddToItinerary(id);
