@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
 from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas
 from services import destinationServices, wishlistServices, selectedDestinationsServices
@@ -89,3 +90,6 @@ def update_selected_destinations_list(selected_destination_list_id: int, new_sel
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
+
+"""if __name__ == "__main__":
+  uvicorn.run(app, host="0.0.0.0", port=8001)"""
