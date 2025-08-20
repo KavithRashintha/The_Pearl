@@ -16,87 +16,151 @@ type WishlistItem = {
     destinations: number[];
 };
 
+type SelectedDestinationsItem = {
+    id: number;
+    touristId: number;
+    selectedDestinations: number[];
+};
+
 export default function PlanTrip() {
     const [wishlist, setWishlist] = useState<Destination[]>([]);
+    const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
-    const touristId = 1; 
+    const [selectedLoading, setSelectedLoading] = useState(true);
+    const touristId = 1;
 
     useEffect(() => {
-        const fetchWishlistAndDestinations = async () => {
+        const fetchData = async () => {
             try {
-                // Fetch the wishlist for the tourist
                 const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
-
-                if (!wishlistResponse.ok) {
-                    throw new Error('Failed to fetch wishlist');
-                }
+                if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
 
                 const wishlistData: WishlistItem = await wishlistResponse.json();
-
-                if (!wishlistData || !wishlistData.destinations || wishlistData.destinations.length === 0) {
-                    setWishlist([]);
-                    setLoading(false);
-                    return;
+                if (wishlistData?.destinations?.length > 0) {
+                    const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
+                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                        return destinationResponse.ok ? await destinationResponse.json() : null;
+                    });
+                    const destinations = await Promise.all(destinationPromises);
+                    setWishlist(destinations.filter(dest => dest !== null) as Destination[]);
                 }
 
-                // Fetch details for each destination in the wishlist
-                const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
-                    const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
-
-                    if (!destinationResponse.ok) {
-                        console.error(`Failed to fetch destination ${destinationId}`);
-                        return null;
+                const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+                if (selectedResponse.ok) {
+                    const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+                    if (selectedData?.selectedDestinations?.length > 0) {
+                        const selectedPromises = selectedData.selectedDestinations.map(async (destinationId) => {
+                            const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                            return destinationResponse.ok ? await destinationResponse.json() : null;
+                        });
+                        const selectedDests = await Promise.all(selectedPromises);
+                        setSelectedDestinations(selectedDests.filter(dest => dest !== null) as Destination[]);
                     }
-
-                    return await destinationResponse.json();
-                });
-
-                const destinations = await Promise.all(destinationPromises);
-
-                // Filter out any failed requests and set the wishlist
-                const validDestinations = destinations.filter(dest => dest !== null) as Destination[];
-                setWishlist(validDestinations);
-
+                }
             } catch (error) {
-                console.error('Error fetching wishlist data:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setLoading(false);
+                setSelectedLoading(false);
             }
         };
 
-        fetchWishlistAndDestinations();
+        fetchData();
     }, []);
+
+    const handleAddToSelected = async (destinationId: number) => {
+        try {
+            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+
+            if (selectedResponse.ok) {
+                const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+
+                if (!selectedData) {
+                    const createResponse = await fetch('http://localhost:8000/selected-destinations/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            touristId: 1,
+                            selectedDestinations: [destinationId]
+                        })
+                    });
+
+                    if (createResponse.ok) {
+                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                        if (destinationResponse.ok) {
+                            const newDestination = await destinationResponse.json();
+                            setSelectedDestinations([newDestination]);
+                        }
+                    }
+                } else {
+                    const updatedSelected = [...selectedData.selectedDestinations, destinationId];
+                    const updateResponse = await fetch(
+                        `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
+                        {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updatedSelected)
+                        }
+                    );
+
+                    if (updateResponse.ok) {
+                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                        if (destinationResponse.ok) {
+                            const newDestination = await destinationResponse.json();
+                            setSelectedDestinations(prev => [...prev, newDestination]);
+                        }
+                    }
+                }
+            } else {
+                throw new Error('Failed to get the selected destinations');
+            }
+        } catch (error) {
+            console.error('Error adding to selected destinations:', error);
+        }
+    };
+
+    const handleRemoveFromSelected = async (destinationId: number) => {
+        try {
+            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+            if (!selectedResponse.ok) throw new Error('Failed to fetch selected destinations');
+
+            const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+            const updatedSelected = selectedData.selectedDestinations.filter(id => id !== destinationId);
+
+            const updateResponse = await fetch(
+                `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedSelected)
+                }
+            );
+
+            if (updateResponse.ok) {
+                setSelectedDestinations(prev => prev.filter(dest => dest.id !== destinationId));
+            }
+        } catch (error) {
+            console.error('Error removing from selected destinations:', error);
+        }
+    };
 
     const handleRemoveFromWishlist = async (destinationId: number) => {
         try {
-            // First get the current wishlist to update it
             const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
-
-            if (!wishlistResponse.ok) {
-                throw new Error('Failed to fetch wishlist for removal');
-            }
+            if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
 
             const wishlistData: WishlistItem = await wishlistResponse.json();
-
-            // Remove the destination from the array
             const updatedDestinations = wishlistData.destinations.filter(id => id !== destinationId);
 
-            // Update the wishlist on the backend
             const updateResponse = await fetch(`http://localhost:8000/wishlist/${wishlistData.id}/update-destinations`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedDestinations)
             });
 
-            if (!updateResponse.ok) {
-                throw new Error('Failed to remove destination from wishlist');
+            if (updateResponse.ok) {
+                setWishlist(prev => prev.filter(dest => dest.id !== destinationId));
             }
-
-            // Update the local state
-            setWishlist(wishlist.filter(dest => dest.id !== destinationId));
-
         } catch (error) {
             console.error('Error removing from wishlist:', error);
         }
@@ -139,17 +203,13 @@ export default function PlanTrip() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                    {/* Dream Bucket */}
                     <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
                         <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-royal-purple mt-1">Dream Bucket</h2>
-
                         {loading ? (
-                            <div className="flex justify-center py-8">
-                                <p>Loading your dream destinations...</p>
-                            </div>
+                            <div className="flex justify-center py-8"><p>Loading your dream destinations...</p></div>
                         ) : wishlist.length === 0 ? (
-                            <div className="flex justify-center py-8">
-                                <p>Your dream bucket is empty</p>
-                            </div>
+                            <div className="flex justify-center py-8"><p>Your dream bucket is empty</p></div>
                         ) : (
                             <div className="space-y-3">
                                 {wishlist.map((destination) => (
@@ -158,7 +218,7 @@ export default function PlanTrip() {
                                         <div className="flex gap-2">
                                             <button
                                                 className="p-1 md:p-2 text-purple-600 hover:bg-white rounded-full transition-colors"
-                                                onClick={() => console.log('Add to itinerary:', destination.id)}
+                                                onClick={() => handleAddToSelected(destination.id)}
                                                 aria-label={`Add ${destination.name} to itinerary`}
                                             >
                                                 <FiPlus size={18} />
@@ -177,13 +237,29 @@ export default function PlanTrip() {
                         )}
                     </div>
 
+                    {/* Make The Dream Real */}
                     <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
                         <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-royal-purple">Make The Dream Real</h2>
-
-                        <div className="flex justify-center py-8 text-gray-500">
-                            <p>Your planned destinations will appear here</p>
-                        </div>
-
+                        {selectedLoading ? (
+                            <div className="flex justify-center py-8"><p>Loading selected destinations...</p></div>
+                        ) : selectedDestinations.length === 0 ? (
+                            <div className="flex justify-center py-8 text-gray-500"><p>Your planned destinations will appear here</p></div>
+                        ) : (
+                            <div className="space-y-3">
+                                {selectedDestinations.map((destination) => (
+                                    <div key={destination.id} className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        <span className="font-medium text-gray-800">{destination.name}</span>
+                                        <button
+                                            className="p-1 md:p-2 text-red-600 hover:bg-white rounded-full transition-colors"
+                                            onClick={() => handleRemoveFromSelected(destination.id)}
+                                            aria-label={`Remove ${destination.name}`}
+                                        >
+                                            <FiTrash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div className="mt-6 md:mt-8 flex justify-center">
                             <button className="px-6 py-2 md:py-3 bg-royal-purple text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
                                 Proceed

@@ -16,7 +16,7 @@ def get_selected_destinations_list(db: Session, tourist_id: int):
     return db.query(SelectedDestinations).filter(SelectedDestinations.touristId == tourist_id).first()
 
 
-def update_selected_destinations_list(db: Session, selected_list_id: int, new_selected_list: List[str]):
+def update_selected_destinations_list(db: Session, selected_list_id: int, new_selected_list: List[int]):
     selected_list = db.query(SelectedDestinations).filter(SelectedDestinations.id == selected_list_id).first()
 
     if selected_list:

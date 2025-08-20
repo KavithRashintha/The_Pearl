@@ -76,17 +76,15 @@ def create_selected_destinations_list(selectedDestinations: selectedDestinations
     return selectedDestinationsServices.create_selected_destinations_list(db, selectedDestinations)
 
 
-@app.get("/selected-destinations/{touristId}", response_model=selectedDestinationsSchemas.SelectedDestinations)
+@app.get("/selected-destinations/{touristId}", response_model=Optional[selectedDestinationsSchemas.SelectedDestinations])
 def get_selected_destinations_list(touristId: int, db: Session = Depends(get_db)):
     return selectedDestinationsServices.get_selected_destinations_list(db, touristId)
 
 
 @app.patch("/selected-destinations/{selected_destination_list_id}/updated-selected-destinations",
            response_model=selectedDestinationsSchemas.SelectedDestinations)
-def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[str],
-                                      db: Session = Depends(get_db)):
-    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id,
-                                                                                  new_selected_destinations)
+def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[int], db: Session = Depends(get_db)):
+    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id, new_selected_destinations)
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
