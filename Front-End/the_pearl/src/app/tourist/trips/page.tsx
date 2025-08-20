@@ -1,173 +1,82 @@
 "use client";
 
+import { useState } from 'react';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { FiPlus, FiTrash2, FiWind } from 'react-icons/fi';
+import { Toaster } from 'react-hot-toast'
 
-type Destination = {
+
+import Step1_SelectDestinations from '@/app/tourist/components/trip_step1';
+import Step2_FillInformation from '@/app/tourist/components/trip_step2';
+import Step3_SelectGuide from '@/app/tourist/components/trip_step3';
+import Step4_ConfirmTrip from '@/app/tourist/components/trip_step4';
+import Step5_Success from '@/app/tourist/components/trip_step5';
+
+export type TourGuide = {
     id: number;
     name: string;
-    image: string;
+    location: string;
+    phone: string;
+    tripsCompleted: number;
+    rating: number;
 };
 
-type WishlistItem = {
-    id: number;
-    touristId: number;
-    destinations: number[];
+
+export type TripFormData = {
+    destinations: { id: number; name: string }[];
+    email: string;
+    contact: string;
+    country: string;
+    passportNumber: string;
+    address: string;
+    numAdults: number;
+    numChildren: number;
+    startDate: string;
+    numDays: number;
+    selectedGuide: TourGuide | null;
 };
 
-type SelectedDestinationsItem = {
-    id: number;
-    touristId: number;
-    selectedDestinations: number[];
-};
+export default function PlanTripPage() {
+    const [currentStep, setCurrentStep] = useState(1);
 
-export default function PlanTrip() {
-    const [wishlist, setWishlist] = useState<Destination[]>([]);
-    const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedLoading, setSelectedLoading] = useState(true);
-    const touristId = 1;
+    const [formData, setFormData] = useState<TripFormData>({
+        destinations: [],
+        email: '',
+        contact: '',
+        country: '',
+        passportNumber: '',
+        address: '',
+        numAdults: 1,
+        numChildren: 0,
+        startDate: '',
+        numDays: 1,
+        selectedGuide: null,
+    });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
-                if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
+    const nextStep = () => setCurrentStep(prev => prev + 1);
+    const prevStep = () => setCurrentStep(prev => prev - 1);
 
-                const wishlistData: WishlistItem = await wishlistResponse.json();
-                if (wishlistData?.destinations?.length > 0) {
-                    const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
-                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
-                        return destinationResponse.ok ? await destinationResponse.json() : null;
-                    });
-                    const destinations = await Promise.all(destinationPromises);
-                    setWishlist(destinations.filter(dest => dest !== null) as Destination[]);
-                }
-
-                const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
-                if (selectedResponse.ok) {
-                    const selectedData: SelectedDestinationsItem = await selectedResponse.json();
-                    if (selectedData?.selectedDestinations?.length > 0) {
-                        const selectedPromises = selectedData.selectedDestinations.map(async (destinationId) => {
-                            const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
-                            return destinationResponse.ok ? await destinationResponse.json() : null;
-                        });
-                        const selectedDests = await Promise.all(selectedPromises);
-                        setSelectedDestinations(selectedDests.filter(dest => dest !== null) as Destination[]);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-                setSelectedLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    const handleAddToSelected = async (destinationId: number) => {
-        try {
-            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
-
-            if (selectedResponse.ok) {
-                const selectedData: SelectedDestinationsItem = await selectedResponse.json();
-
-                if (!selectedData) {
-                    const createResponse = await fetch('http://localhost:8000/selected-destinations/add', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            touristId: 1,
-                            selectedDestinations: [destinationId]
-                        })
-                    });
-
-                    if (createResponse.ok) {
-                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
-                        if (destinationResponse.ok) {
-                            const newDestination = await destinationResponse.json();
-                            setSelectedDestinations([newDestination]);
-                        }
-                    }
-                } else {
-                    const updatedSelected = [...selectedData.selectedDestinations, destinationId];
-                    const updateResponse = await fetch(
-                        `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
-                        {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(updatedSelected)
-                        }
-                    );
-
-                    if (updateResponse.ok) {
-                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
-                        if (destinationResponse.ok) {
-                            const newDestination = await destinationResponse.json();
-                            setSelectedDestinations(prev => [...prev, newDestination]);
-                        }
-                    }
-                }
-            } else {
-                throw new Error('Failed to get the selected destinations');
-            }
-        } catch (error) {
-            console.error('Error adding to selected destinations:', error);
-        }
-    };
-
-    const handleRemoveFromSelected = async (destinationId: number) => {
-        try {
-            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
-            if (!selectedResponse.ok) throw new Error('Failed to fetch selected destinations');
-
-            const selectedData: SelectedDestinationsItem = await selectedResponse.json();
-            const updatedSelected = selectedData.selectedDestinations.filter(id => id !== destinationId);
-
-            const updateResponse = await fetch(
-                `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedSelected)
-                }
-            );
-
-            if (updateResponse.ok) {
-                setSelectedDestinations(prev => prev.filter(dest => dest.id !== destinationId));
-            }
-        } catch (error) {
-            console.error('Error removing from selected destinations:', error);
-        }
-    };
-
-    const handleRemoveFromWishlist = async (destinationId: number) => {
-        try {
-            const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
-            if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
-
-            const wishlistData: WishlistItem = await wishlistResponse.json();
-            const updatedDestinations = wishlistData.destinations.filter(id => id !== destinationId);
-
-            const updateResponse = await fetch(`http://localhost:8000/wishlist/${wishlistData.id}/update-destinations`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedDestinations)
-            });
-
-            if (updateResponse.ok) {
-                setWishlist(prev => prev.filter(dest => dest.id !== destinationId));
-            }
-        } catch (error) {
-            console.error('Error removing from wishlist:', error);
+    const renderStep = () => {
+        switch (currentStep) {
+            case 1:
+                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} />;
+            case 2:
+                return <Step2_FillInformation nextStep={nextStep} prevStep={prevStep} formData={formData} setFormData={setFormData} />;
+            case 3:
+                return <Step3_SelectGuide nextStep={nextStep} prevStep={prevStep} formData={formData} setFormData={setFormData} />;
+            case 4:
+                return <Step4_ConfirmTrip nextStep={nextStep} prevStep={prevStep} formData={formData} />;
+            case 5:
+                return <Step5_Success />;
+            default:
+                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} />;
         }
     };
 
     return (
         <div className="min-h-screen">
+
+            <Toaster position="top-center" />
+
             <section className="relative h-[40vh] w-full overflow-hidden">
                 <div className="relative inset-0 w-full h-full">
                     <Image
@@ -178,9 +87,7 @@ export default function PlanTrip() {
                         priority
                     />
                 </div>
-
                 <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/25 to-transparent" />
-
                 <div className="absolute inset-0 z-10 flex items-center pl-12">
                     <div className="max-w-[45%] pl-8 pb-10">
                         <h1 className="text-4xl md:text-6xl font-semibold leading-tight text-white">
@@ -195,78 +102,7 @@ export default function PlanTrip() {
             </section>
 
             <div className="container mx-auto px-4 md:px-16 py-8 md:py-12">
-                <div className="flex items-center justify-end mb-8 md:mb-12">
-                    <span className="text-base md:text-base font-medium text-gray-600">Ask From Wandy</span>
-                    <button className="flex items-center gap-3 px-3 py-3 ml-2 rounded-full bg-royal-purple text-white hover:bg-purple-700 transition-colors">
-                        <FiWind size={22} />
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                    {/* Dream Bucket */}
-                    <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
-                        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-royal-purple mt-1">Dream Bucket</h2>
-                        {loading ? (
-                            <div className="flex justify-center py-8"><p>Loading your dream destinations...</p></div>
-                        ) : wishlist.length === 0 ? (
-                            <div className="flex justify-center py-8"><p>Your dream bucket is empty</p></div>
-                        ) : (
-                            <div className="space-y-3">
-                                {wishlist.map((destination) => (
-                                    <div key={destination.id} className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <span className="font-medium text-gray-800">{destination.name}</span>
-                                        <div className="flex gap-2">
-                                            <button
-                                                className="p-1 md:p-2 text-purple-600 hover:bg-white rounded-full transition-colors"
-                                                onClick={() => handleAddToSelected(destination.id)}
-                                                aria-label={`Add ${destination.name} to itinerary`}
-                                            >
-                                                <FiPlus size={18} />
-                                            </button>
-                                            <button
-                                                className="p-1 md:p-2 text-red-600 hover:bg-white rounded-full transition-colors"
-                                                onClick={() => handleRemoveFromWishlist(destination.id)}
-                                                aria-label={`Remove ${destination.name}`}
-                                            >
-                                                <FiTrash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Make The Dream Real */}
-                    <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
-                        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-royal-purple">Make The Dream Real</h2>
-                        {selectedLoading ? (
-                            <div className="flex justify-center py-8"><p>Loading selected destinations...</p></div>
-                        ) : selectedDestinations.length === 0 ? (
-                            <div className="flex justify-center py-8 text-gray-500"><p>Your planned destinations will appear here</p></div>
-                        ) : (
-                            <div className="space-y-3">
-                                {selectedDestinations.map((destination) => (
-                                    <div key={destination.id} className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <span className="font-medium text-gray-800">{destination.name}</span>
-                                        <button
-                                            className="p-1 md:p-2 text-red-600 hover:bg-white rounded-full transition-colors"
-                                            onClick={() => handleRemoveFromSelected(destination.id)}
-                                            aria-label={`Remove ${destination.name}`}
-                                        >
-                                            <FiTrash2 size={18} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <div className="mt-6 md:mt-8 flex justify-center">
-                            <button className="px-6 py-2 md:py-3 bg-royal-purple text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
-                                Proceed
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                {renderStep()}
             </div>
         </div>
     );

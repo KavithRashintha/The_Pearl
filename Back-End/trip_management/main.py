@@ -1,12 +1,20 @@
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
+from starlette.middleware.cors import CORSMiddleware
 from schemas import tripSchemas
 from services import tripServices
 from db import get_db
 from sqlalchemy.orm import Session
-from typing import List
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/trips/add", response_model=tripSchemas.Trip)

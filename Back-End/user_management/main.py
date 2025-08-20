@@ -5,12 +5,21 @@ from sqlalchemy.orm import Session
 from db import engine, Base, get_db
 from models import userModels
 from schemas import tokenSchema, touristSchema, userSchema, adminSchema, tourGuideSchema
-from services import authService, userService
+from services import authService, userService, tourGuideService
 from utils.hash import verify_password
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/", tags=["Root"])
 def read_root():
@@ -76,10 +85,10 @@ def read_current_user_profile(
 ):
     return current_user
 
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8001,
-        reload=True
-    )
+@app.get("/users/tour-guides", response_model=list[tourGuideSchema.TourGuide], tags=["Users"])
+def read_tour_guides(db: Session = Depends(get_db)):
+    return tourGuideService.get_all_tour_guides(db)
+
+
+
+
