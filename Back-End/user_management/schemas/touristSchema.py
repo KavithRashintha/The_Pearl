@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
+from typing import Optional
 
 
 class TouristBase(BaseModel):
@@ -27,3 +28,15 @@ class TouristRegistration(BaseModel):
     country: str
     address: str
     birthDay: str
+
+
+class TouristProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    passportNumber: Optional[str] = None
+    country: Optional[str] = None
+    address: Optional[str] = None
+    birthDay: Optional[str] = None
+    profilePicture: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

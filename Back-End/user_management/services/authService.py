@@ -31,7 +31,7 @@ def register_tourist(db: Session, tourist_reg: touristSchema.TouristRegistration
         name=tourist_reg.name,
         email=tourist_reg.email,
         role="tourist",
-        hashed_password=hash_password(tourist_reg.password)
+        hashedPassword=hash_password(tourist_reg.password)
     )
     db.add(new_user)
     db.commit()
@@ -63,7 +63,7 @@ def register_tour_guide(db: Session, tour_guide_reg: tourGuideSchema.TourGuideRe
         name=tour_guide_reg.name,
         email=tour_guide_reg.email,
         role="tour_guide",
-        hashed_password=hash_password(tour_guide_reg.password)
+        hashedPassword=hash_password(tour_guide_reg.password)
     )
     db.add(new_user)
     db.commit()
@@ -93,7 +93,7 @@ def register_admin(db: Session, admin_reg):
         name=admin_reg.name,
         email=admin_reg.email,
         role="admin",  # Force role here
-        hashed_password=hash_password(admin_reg.password)
+        hashedPassword=hash_password(admin_reg.password)
     )
     db.add(new_user)
     db.commit()

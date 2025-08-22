@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from db import engine, Base, get_db
 from models import userModels
 from schemas import tokenSchema, touristSchema, userSchema, adminSchema, tourGuideSchema
-from services import authService, userService, tourGuideService
+from services import authService, userService, tourGuideService, touristService
 from utils.hash import verify_password
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -89,6 +89,26 @@ def read_current_user_profile(
 def read_tour_guides(db: Session = Depends(get_db)):
     return tourGuideService.get_all_tour_guides(db)
 
+@app.get("/tourists/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tourists"])
+def read_tourist_profile(user_id: int, db: Session = Depends(get_db)):
 
+    db_user = touristService.get_tourist_profile(db, user_id=user_id)
 
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return db_user
+@app.patch("/tourists/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tourists"])
+def update_specific_tourist_profile(
+        user_id: int,
+        profile_data: touristSchema.TouristProfileUpdate,
+        db: Session = Depends(get_db),
+):
+
+    updated_user = touristService.update_tourist_profile(db, user_id=user_id, update_data=profile_data)
+
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail="Tourist profile not found")
+
+    return updated_user
 

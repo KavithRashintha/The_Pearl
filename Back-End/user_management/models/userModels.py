@@ -10,7 +10,8 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True, index=True)
     role = Column(String)
-    hashed_password = Column(String)
+    hashedPassword = Column(String)
+    profilePicture = Column(String)
 
     tourist = relationship("Tourist", back_populates="user", uselist=False, cascade="all, delete-orphan")
     tour_guide = relationship("TourGuide", back_populates="user", uselist=False, cascade="all, delete-orphan")
