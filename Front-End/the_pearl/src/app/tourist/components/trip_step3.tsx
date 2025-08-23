@@ -34,7 +34,7 @@ export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFor
     useEffect(() => {
         const fetchGuides = async () => {
             try {
-                const response = await fetch('http://localhost:8001/users/tour-guides');
+                const response = await fetch('http://127.0.0.1:8003/api/users/tour-guides');
                 if (!response.ok) {
                     throw new Error(`Failed to fetch tour guides: ${response.statusText}`);
                 }

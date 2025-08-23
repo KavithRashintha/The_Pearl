@@ -87,7 +87,7 @@ export default function MyAccountPage() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/tourists/${touristId}/profile`);
+                const response = await fetch(`http://127.0.0.1:8003/api/tourists${touristId}/profile`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch profile data.');
                 }
@@ -103,7 +103,7 @@ export default function MyAccountPage() {
 
         const fetchTrips = async () => {
             try {
-                const response = await fetch(`http://localhost:8001/trips/trip-by-tourist/${touristId}/completed`);
+                const response = await fetch(`http://127.0.0.1:8003/api/trips/trip-by-tourist/${touristId}/completed`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch trips.');
                 }
@@ -160,7 +160,7 @@ export default function MyAccountPage() {
         };
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/tourists/${touristId}/profile`, {
+            const response = await fetch(`http://127.0.0.1:8003/api/tourists/${touristId}/profile`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -201,7 +201,7 @@ export default function MyAccountPage() {
         if (profile.profilePicture.startsWith('http')) {
             profileImageUrl = profile.profilePicture;
         } else {
-            profileImageUrl = `http://127.0.0.1:8000${profile.profilePicture}`;
+            profileImageUrl = `http://127.0.0.1:8003${profile.profilePicture}`;
         }
     }
 

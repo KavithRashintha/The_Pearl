@@ -7,7 +7,6 @@ export default function Home(){
         <div>
             <TouristHeroSection/>
 
-            {/*Who we are section*/}
             <div className="flex flex-col justify-center items-center pt-10 pb-18">
                 <div className="pb-16">
                     <h1 className="font-semibold text-4xl text-royal-purple">Who We Are ?</h1>

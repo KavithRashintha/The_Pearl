@@ -30,7 +30,7 @@ export default function Destination() {
                 if (filters.province) params.append('province', filters.province);
                 if (filters.activity) params.append('activity', filters.activity);
 
-                const response = await fetch(`http://127.0.0.1:8000/destinations/`);
+                const response = await fetch(`http://127.0.0.1:8003/api/destinations/`);
                 if (!response.ok) throw new Error('Failed to fetch destinations');
 
                 const data = await response.json();

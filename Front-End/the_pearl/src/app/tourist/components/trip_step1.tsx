@@ -23,25 +23,25 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
+                const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist//${touristId}`);
                 if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
 
                 const wishlistData: WishlistItem = await wishlistResponse.json();
                 if (wishlistData?.destinations?.length > 0) {
                     const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
-                        const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                        const destinationResponse = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${destinationId}`);
                         return destinationResponse.ok ? await destinationResponse.json() : null;
                     });
                     const destinations = await Promise.all(destinationPromises);
                     setWishlist(destinations.filter(dest => dest !== null) as Destination[]);
                 }
 
-                const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+                const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
                 if (selectedResponse.ok) {
                     const selectedData: SelectedDestinationsItem = await selectedResponse.json();
                     if (selectedData?.selectedDestinations?.length > 0) {
                         const selectedPromises = selectedData.selectedDestinations.map(async (destinationId) => {
-                            const destinationResponse = await fetch(`http://localhost:8000/destinations/destination/${destinationId}`);
+                            const destinationResponse = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${destinationId}`);
                             return destinationResponse.ok ? await destinationResponse.json() : null;
                         });
                         const selectedDests = await Promise.all(selectedPromises);
@@ -61,12 +61,12 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
 
     const handleAddToSelected = async (destinationId: number) => {
         try {
-            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
             if (selectedResponse.ok) {
                 const selectedData: SelectedDestinationsItem = await selectedResponse.json();
                 const updatedSelected = [...selectedData.selectedDestinations, destinationId];
                 const updateResponse = await fetch(
-                    `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
+                    `http://127.0.0.1:8003/api/selected-destinations/${selectedData.id}/updated-selected-destinations`,
                     {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +80,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
                     }
                 }
             } else if (selectedResponse.status === 404) {
-                const createResponse = await fetch('http://localhost:8000/selected-destinations/add', {
+                const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ touristId: 1, selectedDestinations: [destinationId] })
@@ -101,12 +101,12 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
 
     const handleRemoveFromSelected = async (destinationId: number) => {
         try {
-            const selectedResponse = await fetch(`http://localhost:8000/selected-destinations/${touristId}`);
+            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
             if (!selectedResponse.ok) throw new Error('Failed to fetch selected destinations');
             const selectedData: SelectedDestinationsItem = await selectedResponse.json();
             const updatedSelected = selectedData.selectedDestinations.filter(id => id !== destinationId);
             const updateResponse = await fetch(
-                `http://localhost:8000/selected-destinations/${selectedData.id}/updated-selected-destinations`,
+                `http://127.0.0.1:8003/api/selected-destinations/${selectedData.id}/updated-selected-destinations`,
                 {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -123,11 +123,11 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
 
     const handleRemoveFromWishlist = async (destinationId: number) => {
         try {
-            const wishlistResponse = await fetch(`http://localhost:8000/wishlist/${touristId}`);
+            const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
             if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
             const wishlistData: WishlistItem = await wishlistResponse.json();
             const updatedDestinations = wishlistData.destinations.filter(id => id !== destinationId);
-            const updateResponse = await fetch(`http://localhost:8000/wishlist/${wishlistData.id}/update-destinations`, {
+            const updateResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${wishlistData.id}/update-destinations`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedDestinations)
