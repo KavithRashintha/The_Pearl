@@ -19,7 +19,7 @@ interface Destination {
 
 async function getDestination(id: number): Promise<Destination | null> {
     try {
-        const res = await fetch(`http://127.0.0.1:8000/destinations/destination/${id}`, {
+        const res = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${id}`, {
             next: { revalidate: 3600 }
         });
 
@@ -62,13 +62,13 @@ export default function DestinationPage() {
         setIsAdding(true);
 
         try {
-            const wishlistResponse = await fetch('http://127.0.0.1:8000/wishlist/1');
+            const wishlistResponse = await fetch('http://127.0.0.1:8003/api/wishlist/1');
 
             if (wishlistResponse.ok) {
                 const wishlistData = await wishlistResponse.json();
 
                 if (!wishlistData) {
-                    const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
+                    const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -90,7 +90,7 @@ export default function DestinationPage() {
                     if (!destinations.includes(destination.id)) {
                         const updatedDestinations = [...destinations, destination.id];
                         const response = await fetch(
-                            `http://127.0.0.1:8000/wishlist/${wishlistId}/update-destinations`,
+                            `http://127.0.0.1:8003/api/wishlist/${wishlistId}/update-destinations`,
                             {
                                 method: 'PATCH',
                                 headers: {

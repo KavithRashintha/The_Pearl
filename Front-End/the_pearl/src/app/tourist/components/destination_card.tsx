@@ -22,13 +22,13 @@ export default function DestinationCard({ id, name, image, onAddToItinerary }: D
         setIsAdding(true);
 
         try {
-            const wishlistResponse = await fetch('http://127.0.0.1:8000/wishlist/1');
+            const wishlistResponse = await fetch('http://127.0.0.1:8003/api/wishlist/1');
 
             if (wishlistResponse.ok) {
                 const wishlistData = await wishlistResponse.json();
 
                 if(!wishlistData){
-                    const response = await fetch('http://127.0.0.1:8000/wishlist/add', {
+                    const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -52,7 +52,7 @@ export default function DestinationCard({ id, name, image, onAddToItinerary }: D
 
                     if (!destinations.includes(id)) {
                         const response = await fetch(
-                            `http://127.0.0.1:8000/wishlist/${wishlistId}/update-destinations`,
+                            `http://127.0.0.1:8003/api/wishlist/${wishlistId}/update-destinations`,
                             {
                                 method: 'PATCH',
                                 headers: {

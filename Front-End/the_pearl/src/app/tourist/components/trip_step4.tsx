@@ -39,7 +39,7 @@ export default function Step4_ConfirmTrip({ nextStep, prevStep, formData }: Step
             paymentStatus: "Pending"
         };
         try {
-            const response = await fetch('http://localhost:8002/trips/add', {
+            const response = await fetch('http://127.0.0.1:8003/api/trips/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
