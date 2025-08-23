@@ -16,7 +16,7 @@ def get_wishlist(db: Session, tourist_id: int):
     return db.query(WishList).filter(WishList.touristId == tourist_id).first()
 
 
-def update_wishlist(db: Session, wishlist_id: int, new_destinations: List[str]):
+def update_wishlist(db: Session, wishlist_id: int, new_destinations: List[int]):
     wishlist = db.query(WishList).filter(WishList.id == wishlist_id).first()
 
     if wishlist:

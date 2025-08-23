@@ -8,9 +8,10 @@ class Destinations(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    details = Column(String)
+    details = Column(ARRAY(String))
     type = Column(String)
     activities = Column(ARRAY(String))
     province = Column(String)
     district = Column(String)
     climate = Column(String)
+    image = Column(String)

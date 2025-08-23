@@ -1,12 +1,22 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
-from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas, tripSchemas
-from services import destinationServices, wishlistServices, selectedDestinationsServices, tripServices
+from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas
+from services import destinationServices, wishlistServices, selectedDestinationsServices
 from db import get_db
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/destinations/add", response_model=destinationSchemas.Destination)
 def add_destination(destination: destinationSchemas.DestinationCreated, db: Session = Depends(get_db)):
@@ -47,13 +57,13 @@ def create_wishlist(wishlist: wishlistSchemas.WishListCreated, db: Session = Dep
     return wishlistServices.create_wishlist(db, wishlist)
 
 
-@app.get('/wishlist/{touristId}', response_model=wishlistSchemas.WishList)
+@app.get('/wishlist/{touristId}', response_model=Optional[wishlistSchemas.WishList])
 def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
     return wishlistServices.get_wishlist(db, touristId)
 
 
 @app.patch("/wishlist/{wishlist_id}/update-destinations", response_model=wishlistSchemas.WishList)
-def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], db: Session = Depends(get_db)):
+def update_wishlist_destinations(wishlist_id: int, new_destinations: List[int], db: Session = Depends(get_db)):
     updated_wishlist = wishlistServices.update_wishlist(db, wishlist_id, new_destinations)
     if not updated_wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")
@@ -66,53 +76,18 @@ def create_selected_destinations_list(selectedDestinations: selectedDestinations
     return selectedDestinationsServices.create_selected_destinations_list(db, selectedDestinations)
 
 
-@app.get("/selected-destinations/{touristId}", response_model=selectedDestinationsSchemas.SelectedDestinations)
+@app.get("/selected-destinations/{touristId}", response_model=Optional[selectedDestinationsSchemas.SelectedDestinations])
 def get_selected_destinations_list(touristId: int, db: Session = Depends(get_db)):
     return selectedDestinationsServices.get_selected_destinations_list(db, touristId)
 
 
 @app.patch("/selected-destinations/{selected_destination_list_id}/updated-selected-destinations",
            response_model=selectedDestinationsSchemas.SelectedDestinations)
-def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[str],
-                                      db: Session = Depends(get_db)):
-    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id,
-                                                                                  new_selected_destinations)
+def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[int], db: Session = Depends(get_db)):
+    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id, new_selected_destinations)
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
 
-
-@app.post("/trips/add", response_model=tripSchemas.Trip)
-def create_trip(trip: tripSchemas.TripCreated, db: Session = Depends(get_db)):
-    return tripServices.create_trip(db, trip)
-
-
-@app.get("/trips/", response_model=list[tripSchemas.Trip])
-def get_all_trips(db: Session = Depends(get_db)):
-    return tripServices.get_all_trip(db)
-
-
-@app.get("/trips/trip-by-tourist/{touristId}", response_model=list[tripSchemas.Trip])
-def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
-    return tripServices.get_trip_by_tourist_id(db, touristId)
-
-
-@app.get("/trips/trip-by-tour-guide/{tourGuideId}", response_model=list[tripSchemas.Trip])
-def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
-    return tripServices.get_trip_by_tour_guide_id(db, tourGuideId)
-
-
-@app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
-def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate, db: Session = Depends(get_db)):
-    updated_trip_status = tripServices.update_trip_status(db, tripId, status_update)
-    if not updated_trip_status:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    return updated_trip_status
-
-
-@app.patch('/trips/{tripId}/update-payment-status', response_model=tripSchemas.Trip)
-def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaymentStatusUpdate, db: Session = Depends(get_db)):
-    updated_payment_status = tripServices.update_trip_payment_status(db, tripId, payment_update)
-    if not updated_payment_status:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    return updated_payment_status
+if __name__ == "__main__":
+  uvicorn.run(app, host="0.0.0.0", port=8000)

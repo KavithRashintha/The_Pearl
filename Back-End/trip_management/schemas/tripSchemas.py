@@ -4,10 +4,13 @@ from typing import List
 
 class TripBase(BaseModel):
     touristId: int
+    touristPassportNumber: str
+    touristCountry: str
     tourGuideId: int
     destinations: List[str]
     numberOfAdults: int
     numberOfChildren: int
+    startDate: str
     numberOfDays: int
     tripStatus: str
     tripPayment: float

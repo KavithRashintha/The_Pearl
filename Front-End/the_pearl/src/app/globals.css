@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.bg-royal-purple {
+    background-color: #7119E6;
+}
+
+.text-royal-purple {
+    color: #7119E6;
+}
+
+.bg-royal-purple-hover {
+    background-color: #9341ef;
+}
