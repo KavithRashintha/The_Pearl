@@ -8,10 +8,13 @@ class Trip(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     touristId = Column(Integer)
+    touristPassportNumber = Column(String)
+    touristCountry = Column(String)
     tourGuideId = Column(Integer)
     destinations = Column(ARRAY(String))
     numberOfAdults = Column(Integer)
     numberOfChildren = Column(Integer)
+    startDate = Column(String)
     numberOfDays = Column(Integer)
     tripStatus = Column(String)
     tripPayment = Column(Float)

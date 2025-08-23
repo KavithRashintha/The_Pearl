@@ -1,12 +1,20 @@
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
+from starlette.middleware.cors import CORSMiddleware
 from schemas import tripSchemas
 from services import tripServices
 from db import get_db
 from sqlalchemy.orm import Session
-from typing import List
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/trips/add", response_model=tripSchemas.Trip)
@@ -28,6 +36,9 @@ def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
 def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
     return tripServices.get_trip_by_tour_guide_id(db, tourGuideId)
 
+@app.get("/trips/trip-by-tourist/{touristId}/completed", response_model=list[tripSchemas.Trip])
+def get_completed_trips_for_tourist(touristId: int, db: Session = Depends(get_db)):
+    return tripServices.get_completed_trips_by_tourist(db, touristId)
 
 @app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
 def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate, db: Session = Depends(get_db)):
@@ -45,11 +56,5 @@ def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaym
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_payment_status
 
-
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8003,
-        reload=True
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8002)

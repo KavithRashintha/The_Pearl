@@ -6,7 +6,7 @@ class UserBase(BaseModel):
     name: str
     email: EmailStr
     role: str
-
+    profilePicture: str
 
 class UserCreate(UserBase):
     password: str

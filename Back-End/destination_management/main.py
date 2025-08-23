@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
 from schemas import destinationSchemas, wishlistSchemas, selectedDestinationsSchemas
 from services import destinationServices, wishlistServices, selectedDestinationsServices
@@ -5,10 +6,10 @@ from db import get_db
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 app = FastAPI()
 
-# Add CORS middleware here ▼
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -56,13 +57,13 @@ def create_wishlist(wishlist: wishlistSchemas.WishListCreated, db: Session = Dep
     return wishlistServices.create_wishlist(db, wishlist)
 
 
-@app.get('/wishlist/{touristId}', response_model=wishlistSchemas.WishList)
+@app.get('/wishlist/{touristId}', response_model=Optional[wishlistSchemas.WishList])
 def get_wishlist_by_id(touristId: int, db: Session = Depends(get_db)):
     return wishlistServices.get_wishlist(db, touristId)
 
 
 @app.patch("/wishlist/{wishlist_id}/update-destinations", response_model=wishlistSchemas.WishList)
-def update_wishlist_destinations(wishlist_id: int, new_destinations: List[str], db: Session = Depends(get_db)):
+def update_wishlist_destinations(wishlist_id: int, new_destinations: List[int], db: Session = Depends(get_db)):
     updated_wishlist = wishlistServices.update_wishlist(db, wishlist_id, new_destinations)
     if not updated_wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")
@@ -75,17 +76,18 @@ def create_selected_destinations_list(selectedDestinations: selectedDestinations
     return selectedDestinationsServices.create_selected_destinations_list(db, selectedDestinations)
 
 
-@app.get("/selected-destinations/{touristId}", response_model=selectedDestinationsSchemas.SelectedDestinations)
+@app.get("/selected-destinations/{touristId}", response_model=Optional[selectedDestinationsSchemas.SelectedDestinations])
 def get_selected_destinations_list(touristId: int, db: Session = Depends(get_db)):
     return selectedDestinationsServices.get_selected_destinations_list(db, touristId)
 
 
 @app.patch("/selected-destinations/{selected_destination_list_id}/updated-selected-destinations",
            response_model=selectedDestinationsSchemas.SelectedDestinations)
-def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[str],
-                                      db: Session = Depends(get_db)):
-    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id,
-                                                                                  new_selected_destinations)
+def update_selected_destinations_list(selected_destination_list_id: int, new_selected_destinations: List[int], db: Session = Depends(get_db)):
+    updated_list = selectedDestinationsServices.update_selected_destinations_list(db, selected_destination_list_id, new_selected_destinations)
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
+
+if __name__ == "__main__":
+  uvicorn.run(app, host="0.0.0.0", port=8000)

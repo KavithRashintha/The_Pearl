@@ -1,5 +1,5 @@
 from db import engine, Base
-from models import destinationModels
+from models import selectedDestinationsModels
 
 
 def create_tables():

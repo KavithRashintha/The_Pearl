@@ -1,6 +1,6 @@
-import TouristHeroSection from "@/app/(tourist)/components/tourist_hero_section";
+import TouristHeroSection from "@/app/tourist/components/tourist_hero_section";
 import Image from 'next/image';
-import ImageCardsCarousel from "@/app/(tourist)/components/image_cards_carousel";
+import ImageCardsCarousel from "@/app/tourist/components/image_cards_carousel";
 import Link from "next/link";
 export default function Home(){
     return(

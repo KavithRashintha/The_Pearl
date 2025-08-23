@@ -8,11 +8,11 @@ export default function TouristNavBar() {
     const pathname = usePathname();
 
     const navItems = [
-        { label: 'Home', href: '/home' },
-        { label: 'Destinations', href: '/destinations' },
-        { label: 'Plan Trip', href: '/trips' },
-        { label: 'About Us', href: '/about-us' },
-        { label: 'Account', href: '/account' },
+        { label: 'Home', href: '/tourist/home' },
+        { label: 'Destinations', href: '/tourist/destinations' },
+        { label: 'Plan Trip', href: '/tourist/trips' },
+        { label: 'About Us', href: '/tourist/about-us' },
+        { label: 'Account', href: '/tourist/account' },
     ];
 
     return (
