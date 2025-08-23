@@ -44,3 +44,9 @@ def update_trip_payment_status(db: Session, tripId: int, payment_update: tripSch
         db.refresh(trip)
         return trip
     return None
+
+def get_completed_trips_by_tourist(db: Session, tourist_id: int):
+    return db.query(Trip).filter(
+        Trip.touristId == tourist_id,
+        Trip.tripStatus == "completed"
+    ).all()

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FiSave, FiXCircle } from 'react-icons/fi';
+import { FiMessageSquare, FiSave, FiXCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 type TouristProfile = {
@@ -25,19 +25,9 @@ type Trip = {
     id: number;
     startDate: string;
     endDate: string;
-    tourGuide: string;
+    tourGuideName: string;
     destinations: string[];
 };
-
-const dummyTrips: Trip[] = [
-    {
-        id: 1,
-        startDate: "2024-06-21",
-        endDate: "2024-07-11",
-        tourGuide: "Mr. Saman Perera",
-        destinations: ["Unawatuna", "Mirissa", "Weligama Beach", "Ella Rock", "Horton Plains"]
-    }
-];
 
 const calculateAge = (birthDateString: string): number | null => {
     if (!birthDateString) return null;
@@ -51,13 +41,7 @@ const calculateAge = (birthDateString: string): number | null => {
     return age;
 };
 
-const DetailField = ({
-                         label,
-                         value,
-                         isEditing = false,
-                         name,
-                         onChange
-                     }: {
+const DetailField = ({label, value, isEditing = false, name, onChange}: {
     label: string,
     value: string | number | undefined | null,
     isEditing?: boolean,
@@ -90,9 +74,13 @@ export default function MyAccountPage() {
     const [profile, setProfile] = useState<TouristProfile | null>(null);
     const [editableProfile, setEditableProfile] = useState<TouristProfile | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false); // ✨ State to handle saving status
+    const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [trips, setTrips] = useState<Trip[]>([]);
+    const [tripsLoading, setTripsLoading] = useState(true);
+    const [tripsError, setTripsError] = useState<string | null>(null);
 
     const touristId = 1;
 
@@ -112,7 +100,24 @@ export default function MyAccountPage() {
                 setLoading(false);
             }
         };
+
+        const fetchTrips = async () => {
+            try {
+                const response = await fetch(`http://localhost:8001/trips/trip-by-tourist/${touristId}/completed`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch trips.');
+                }
+                const data: Trip[] = await response.json();
+                setTrips(data);
+            } catch (err: any) {
+                setTripsError(err.message);
+            } finally {
+                setTripsLoading(false);
+            }
+        };
+
         fetchProfile();
+        fetchTrips();
     }, [touristId]);
 
     const handleEdit = () => {
@@ -152,12 +157,11 @@ export default function MyAccountPage() {
             country: editableProfile.tourist.country,
             address: editableProfile.tourist.address,
             birthDay: editableProfile.tourist.birthDay,
-            profilePicture: profile?.profilePicture
         };
 
         try {
             const response = await fetch(`http://127.0.0.1:8000/tourists/${touristId}/profile`, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
@@ -191,6 +195,16 @@ export default function MyAccountPage() {
         }
     };
 
+    let profileImageUrl = "/images/profile-placeholder.jpg";
+
+    if (profile && profile.profilePicture) {
+        if (profile.profilePicture.startsWith('http')) {
+            profileImageUrl = profile.profilePicture;
+        } else {
+            profileImageUrl = `http://127.0.0.1:8000${profile.profilePicture}`;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 md:px-16 py-12">
@@ -198,7 +212,7 @@ export default function MyAccountPage() {
                     <div className="flex flex-col items-center text-center md:w-1/3">
                         <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4">
                             <Image
-                                src={profile?.profilePicture || "/images/profile-placeholder.jpg"}
+                                src={profileImageUrl}
                                 alt="Profile Picture"
                                 layout="fill"
                                 objectFit="cover"
@@ -248,6 +262,47 @@ export default function MyAccountPage() {
                     </div>
                 </div>
                 <div className="mt-12">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-3xl font-bold text-violet-600">My Trips</h2>
+                        <button className="px-6 py-2 bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 font-medium transition-colors flex items-center gap-2">
+                            <FiMessageSquare size={18} />
+                            Chat
+                        </button>
+                    </div>
+                    {tripsLoading && <p>Loading trips...</p>}
+                    {tripsError && <p className="text-red-500">Error: {tripsError}</p>}
+                    {!tripsLoading && !tripsError && (
+                        <div className="space-y-6">
+                            {trips.length > 0 ? (
+                                trips.map(trip => (
+                                    <div key={trip.id} className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 space-y-4">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-700 mb-4">
+                                            <div><strong>Started Date -</strong> {trip.startDate}</div>
+                                            <div><strong>End Date -</strong> {trip.endDate}</div>
+                                            <div className="col-span-2"><strong>Tour Guide:</strong> {trip.tourGuideName}</div>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-violet-600 border-b-2 border-violet-200 pb-1 mb-3">
+                                                Destinations
+                                            </h3>
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-600">
+                                                {trip.destinations.map((dest, index) => (
+                                                    <div key={index} className="flex items-center">
+                                                        <span>{dest}</span>
+                                                        {index < trip.destinations.length - 1 && <span className="ml-4 text-violet-400">→</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 text-center text-gray-500">
+                                    <p>You have no completed trips.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

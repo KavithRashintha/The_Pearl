@@ -36,6 +36,9 @@ def get_trip_by_tourist_id(touristId: int, db: Session = Depends(get_db)):
 def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
     return tripServices.get_trip_by_tour_guide_id(db, tourGuideId)
 
+@app.get("/trips/trip-by-tourist/{touristId}/completed", response_model=list[tripSchemas.Trip])
+def get_completed_trips_for_tourist(touristId: int, db: Session = Depends(get_db)):
+    return tripServices.get_completed_trips_by_tourist(db, touristId)
 
 @app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
 def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate, db: Session = Depends(get_db)):
@@ -52,3 +55,6 @@ def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaym
     if not updated_payment_status:
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_payment_status
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8002)
