@@ -98,6 +98,17 @@ def read_tourist_profile(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
 
     return db_user
+
+@app.get("/tour-guide/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tour Guides"])
+def read_tour_guides_profile(user_id: int, db: Session = Depends(get_db)):
+
+    db_user = tourGuideService.get_tour_guide_profile(db, user_id=user_id)
+
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return db_user
+
 @app.patch("/tourists/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tourists"])
 def update_specific_tourist_profile(
         user_id: int,

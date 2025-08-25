@@ -52,4 +52,6 @@ async def get_all_guides(): return await userClient.get_all_guides()
 
 async def get_tourist_profile(user_id: int): return await userClient.get_tourist_profile(user_id)
 
+async def get_tour_guide_profile(user_id: int): return await userClient.get_tour_guide_profile(user_id)
+
 async def update_tourist_profile(user_id: int, data: proxySchema.TouristProfileUpdate): return await userClient.update_tourist_profile(user_id, data)

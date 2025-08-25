@@ -16,7 +16,6 @@ class TourGuideCreate(TourGuideBase):
 class TourGuide(TourGuideBase):
     id: int
     userId: int
-    name: str
     model_config = ConfigDict(from_attributes=True)
 
 

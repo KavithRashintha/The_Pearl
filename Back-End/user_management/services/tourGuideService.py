@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from models import tourGuideModels, userModels
 
 def get_all_tour_guides(db: Session):
-    # Get all tour guides
     tour_guides = db.query(tourGuideModels.TourGuide).all()
 
     result = []
@@ -22,3 +21,6 @@ def get_all_tour_guides(db: Session):
         result.append(guide_data)
 
     return result
+
+def get_tour_guide_profile(db: Session, user_id: int, ):
+    return db.query(userModels.User).filter(userModels.User.id == user_id).first()

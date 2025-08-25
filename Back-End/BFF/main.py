@@ -121,6 +121,10 @@ async def read_tour_guides():
 async def read_tourist_profile(user_id: int):
     return await proxyService.get_tourist_profile(user_id)
 
+@app.get("/api/tour-guide/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tour Guides"])
+async def read_tour_guide_profile(user_id: int):
+    return await proxyService.get_tour_guide_profile(user_id)
+
 @app.patch("/api/tourists/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tourists"])
 async def update_tourist_profile(user_id: int, profile_data: proxySchema.TouristProfileUpdate):
     return await proxyService.update_tourist_profile(user_id, profile_data)
