@@ -129,6 +129,10 @@ async def read_tour_guide_profile(user_id: int):
 async def update_tourist_profile(user_id: int, profile_data: proxySchema.TouristProfileUpdate):
     return await proxyService.update_tourist_profile(user_id, profile_data)
 
+@app.patch("/api/tour-guide/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tour Guides"])
+async def update_tour_guide_profile(user_id:int, profile_data: proxySchema.TourGuideProfileUpdate):
+    return await proxyService.update_tour_guide_profile(user_id, profile_data)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8003)

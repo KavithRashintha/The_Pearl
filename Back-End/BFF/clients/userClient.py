@@ -42,3 +42,6 @@ async def get_tour_guide_profile(user_id: int):
 
 async def update_tourist_profile(user_id: int, data: proxySchema.TouristProfileUpdate):
     return await handle_request("PATCH", f"{USER_SERVICE_URL}/tourists/{user_id}/profile", json=data.model_dump(exclude_unset=True))
+
+async def update_tour_guide_profile(user_id: int, data: proxySchema.TourGuideProfileUpdate):
+    return await handle_request("PATCH", f"{USER_SERVICE_URL}/tour-guide/{user_id}/profile", json=data.model_dump(exclude_unset=True))

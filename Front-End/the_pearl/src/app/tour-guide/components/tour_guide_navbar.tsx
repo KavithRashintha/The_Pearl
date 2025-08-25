@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 const navLinks = [
-    { name: 'My Profile', href: '/tour-guide/profile' },
-    { name: 'Requests', href: '/tour-guide/requests' },
+    { name: 'My Profile', href: '/tour-guide/account' },
+    { name: 'Requests', href: '/tour-guide/tour-request' },
     { name: 'Chats', href: '/tour-guide/chats' },
     { name: 'Completed Tours', href: '/tour-guide/completed-tours' },
 ];
@@ -35,8 +35,10 @@ export default function TourGuideSidebar() {
                         <Link
                             key={link.name}
                             href={link.href}
-                            className={`px-4 py-2 text-center rounded-lg text-gray-700 hover:bg-violet-200 transition-colors ${
-                                isActive ? 'bg-violet-200 font-semibold text-violet-800' : 'font-medium'
+                            className={`px-4 py-2 text-center text-gray-700 hover:text-violet-800 transition-colors ${
+                                isActive
+                                    ? 'font-semibold text-violet-800 border-b-1 border-violet-600'
+                                    : 'font-medium'
                             }`}
                         >
                             {link.name}

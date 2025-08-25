@@ -110,6 +110,7 @@ class TouristProfileUpdate(BaseModel):
     address: Optional[str] = None
     birthDay: Optional[str] = None
     profilePicture: Optional[str] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 class TourGuide(BaseModel):
@@ -121,6 +122,16 @@ class TourGuide(BaseModel):
     licenseNumber: str
     reviewCount: int
     name: str
+
+class TourGuideProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    telephone: Optional[str] = None
+    address: Optional[str] = None
+    nic: Optional[str] = None
+    licenseNumber: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class UserDetails(BaseModel):
     id: int

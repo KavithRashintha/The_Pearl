@@ -84,10 +84,59 @@ export default function TourGuideProfilePage() {
         setIsEditing(false);
     };
 
-    const handleSave = () => {
-        setProfile(editableProfile);
-        setIsEditing(false);
-        toast.success("Profile updated successfully!");
+    const handleSave = async () => {
+        if (!editableProfile) return;
+
+        const requiredFields = {
+            Name: editableProfile.name,
+            Email: editableProfile.email,
+            Contact: editableProfile.tour_guide.telephone,
+            Address: editableProfile.tour_guide.address,
+            NIC: editableProfile.tour_guide.nic,
+            'Licence No': editableProfile.tour_guide.licenseNumber,
+        };
+
+        for (const [field, value] of Object.entries(requiredFields)) {
+            if (!value || String(value).trim() === '') {
+                toast.error(`Please fill in the ${field} field.`);
+                return;
+            }
+        }
+
+        setIsSaving(true);
+
+        // 2. Map data to the API payload structure
+        const payload = {
+            name: editableProfile.name,
+            email: editableProfile.email,
+            telephone: editableProfile.tour_guide.telephone,
+            address: editableProfile.tour_guide.address,
+            nic: editableProfile.tour_guide.nic,
+            licenseNumber: editableProfile.tour_guide.licenseNumber,
+        };
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8003/api/tour-guide/${tourGuideUserId}/profile`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to update profile.');
+            }
+
+            // 4. Handle success
+            setProfile(editableProfile);
+            setIsEditing(false);
+            toast.success('Profile updated successfully!');
+
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,9 +166,9 @@ export default function TourGuideProfilePage() {
     }
 
     return (
-        <main className="p-8 md:p-12 bg-white flex-1">
-            <section className="flex items-center gap-6 mb-12">
-                <div className="relative w-28 h-28 rounded-full overflow-hidden">
+        <main className="p-8 md:p-12 bg-white flex-1 pl-8">
+            <section className="flex items-center gap-6 mb-12 mt-12 pl-8">
+                <div className="relative w-48 h-48 rounded-full overflow-hidden">
                     <Image
                         src={profile.profilePicture || "/images/profile-placeholder.jpg"}
                         alt="Tour Guide Profile Picture"
@@ -128,33 +177,35 @@ export default function TourGuideProfilePage() {
                         priority
                     />
                 </div>
-                <div>
-                    {isEditing ? (
-                        <input
-                            type="text" name="name" value={editableProfile.name} onChange={handleChange}
-                            className="text-4xl font-bold text-gray-800 border-b-2 focus:outline-none focus:border-violet-500"
-                        />
-                    ) : (
-                        <h1 className="text-4xl font-bold text-gray-800">
-                            {profile.name} - <span className="text-violet-600">{profile.tour_guide.address.split(',')[0]}</span>
-                        </h1>
-                    )}
-                </div>
-                <div className="ml-auto flex items-center gap-3">
-                    {isEditing ? (
-                        <>
-                            <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center gap-2 disabled:bg-gray-400">
-                                <FiSave size={16} /> {isSaving ? 'Saving...' : 'Save'}
+                <div className = "flex-col ml-8">
+                    <div className = 'mb-4'>
+                        {isEditing ? (
+                            <input
+                                type="text" name="name" value={editableProfile.name} onChange={handleChange}
+                                className="text-5xl font-bold text-gray-800 border-b-2 focus:outline-none focus:border-violet-500 tracking-wider"
+                            />
+                        ) : (
+                            <h1 className="text-5xl font-bold text-gray-800 tracking-wider">
+                                <span className="text-violet-600">{profile.name} - <span className= "font-semibold">{profile.tour_guide.address.split(',')[0]}</span></span>
+                            </h1>
+                        )}
+                    </div>
+                    <div className="ml-auto flex items-center gap-3">
+                        {isEditing ? (
+                            <>
+                                <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center gap-2 disabled:bg-gray-400">
+                                    <FiSave size={16} /> {isSaving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                                <button onClick={handleCancel} disabled={isSaving} className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium transition-colors flex items-center gap-2">
+                                    <FiXCircle size={16} /> Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <button onClick={handleEdit} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors flex items-center gap-2">
+                                <FiEdit size={16} /> Edit Profile
                             </button>
-                            <button onClick={handleCancel} disabled={isSaving} className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium transition-colors flex items-center gap-2">
-                                <FiXCircle size={16} /> Cancel
-                            </button>
-                        </>
-                    ) : (
-                        <button onClick={handleEdit} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors flex items-center gap-2">
-                            <FiEdit size={16} /> Edit Profile
-                        </button>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 

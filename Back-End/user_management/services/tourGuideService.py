@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from models import tourGuideModels, userModels
+from schemas import tourGuideSchema
 
 def get_all_tour_guides(db: Session):
     tour_guides = db.query(tourGuideModels.TourGuide).all()
@@ -24,3 +25,21 @@ def get_all_tour_guides(db: Session):
 
 def get_tour_guide_profile(db: Session, user_id: int, ):
     return db.query(userModels.User).filter(userModels.User.id == user_id).first()
+
+def update_tour_guide_profile(db: Session, user_id: int, update_data: tourGuideSchema.TourGuideProfileUpdate):
+    db_user = get_tour_guide_profile(db, user_id)
+    if not db_user or not db_user.tour_guide:
+        return None
+
+    update_dict = update_data.model_dump(exclude_unset=True)
+
+    for key, value in update_dict.items():
+        if key in ["name", "email"]:
+            setattr(db_user, key, value)
+        # Update fields on the TourGuide model
+        elif hasattr(db_user.tour_guide, key):
+            setattr(db_user.tour_guide, key, value)
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
