@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
-
+from typing import Optional
 
 class TourGuideBase(BaseModel):
     nic: str
@@ -16,9 +16,13 @@ class TourGuideCreate(TourGuideBase):
 class TourGuide(TourGuideBase):
     id: int
     userId: int
-    name: str
     model_config = ConfigDict(from_attributes=True)
 
+class TourGuideInfo(TourGuideBase):
+    id: int
+    userId: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
 
 class TourGuideRegistration(BaseModel):
     name: str
@@ -30,3 +34,13 @@ class TourGuideRegistration(BaseModel):
     address: str
     licenseNumber: str
     reviewCount: int
+
+class TourGuideProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    telephone: Optional[str] = None
+    address: Optional[str] = None
+    nic: Optional[str] = None
+    licenseNumber: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

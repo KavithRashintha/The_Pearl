@@ -32,6 +32,21 @@ async def get_trips_by_tourist(touristId: int):
 async def get_trips_by_guide(tourGuideId: int):
     return await proxyService.get_trips_by_guide(tourGuideId)
 
+@app.get("/api/trips/tour-guide/{tour_guide_id}/pending", response_model=list[proxySchema.TripWithTouristInfo], tags=["Trips"])
+async def get_pending_trips_by_tour_guide(tour_guide_id: int):
+    return await proxyService.get_pending_trips_for_tour_guide(tour_guide_id)
+
+@app.get("/api/trips/tour-guide/{tour_guide_id}/accepted", response_model=list[proxySchema.TripWithTouristInfo], tags=["Trips"])
+async def get_accepted_trips_by_tour_guide(tour_guide_id: int):
+    return await proxyService.get_accepted_trips_for_tour_guide(tour_guide_id)
+
+@app.get("/api/trips/tour-guide/{tour_guide_id}/started", response_model=list[proxySchema.TripWithTouristInfo], tags=["Trips"])
+async def get_started_trips_by_tour_guide(tour_guide_id: int):
+    return await proxyService.get_started_trips_for_tour_guide(tour_guide_id)
+@app.get("/api/trips/tour-guide/{tour_guide_id}/completed", response_model=list[proxySchema.TripWithTouristInfo], tags=["Trips"])
+async def get_completed_trips_by_tour_guide(tour_guide_id: int):
+    return await proxyService.get_completed_trips_for_tour_guide(tour_guide_id)
+
 @app.get("/api/trips/trip-by-tourist/{touristId}/completed", response_model=List[proxySchema.Trip], tags=["Trips"])
 async def get_completed_trips(touristId: int):
     return await proxyService.get_completed_trips_by_tourist(touristId)
@@ -121,9 +136,17 @@ async def read_tour_guides():
 async def read_tourist_profile(user_id: int):
     return await proxyService.get_tourist_profile(user_id)
 
+@app.get("/api/tour-guide/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tour Guides"])
+async def read_tour_guide_profile(user_id: int):
+    return await proxyService.get_tour_guide_profile(user_id)
+
 @app.patch("/api/tourists/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tourists"])
 async def update_tourist_profile(user_id: int, profile_data: proxySchema.TouristProfileUpdate):
     return await proxyService.update_tourist_profile(user_id, profile_data)
+
+@app.patch("/api/tour-guide/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tour Guides"])
+async def update_tour_guide_profile(user_id:int, profile_data: proxySchema.TourGuideProfileUpdate):
+    return await proxyService.update_tour_guide_profile(user_id, profile_data)
 
 
 if __name__ == "__main__":

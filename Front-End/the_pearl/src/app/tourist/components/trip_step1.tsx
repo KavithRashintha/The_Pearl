@@ -23,7 +23,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist//${touristId}`);
+                const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
                 if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
 
                 const wishlistData: WishlistItem = await wishlistResponse.json();

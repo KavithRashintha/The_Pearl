@@ -42,7 +42,6 @@ def register_new_tourist(
     db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
     return {"message": f"Tourist '{db_user.name}' created successfully."}
 
-# Tour Guide Endpoints
 @app.post("/auth/register/guide", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
 def register_new_guide(
         guide_reg_data: tourGuideSchema.TourGuideRegistration,
@@ -85,7 +84,7 @@ def read_current_user_profile(
 ):
     return current_user
 
-@app.get("/users/tour-guides", response_model=list[tourGuideSchema.TourGuide], tags=["Users"])
+@app.get("/users/tour-guides", response_model=list[tourGuideSchema.TourGuideInfo], tags=["Users"])
 def read_tour_guides(db: Session = Depends(get_db)):
     return tourGuideService.get_all_tour_guides(db)
 
@@ -98,12 +97,19 @@ def read_tourist_profile(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
 
     return db_user
+
+@app.get("/tour-guide/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tour Guides"])
+def read_tour_guides_profile(user_id: int, db: Session = Depends(get_db)):
+
+    db_user = tourGuideService.get_tour_guide_profile(db, user_id=user_id)
+
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return db_user
+
 @app.patch("/tourists/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tourists"])
-def update_specific_tourist_profile(
-        user_id: int,
-        profile_data: touristSchema.TouristProfileUpdate,
-        db: Session = Depends(get_db),
-):
+def update_specific_tourist_profile(user_id: int, profile_data: touristSchema.TouristProfileUpdate, db: Session = Depends(get_db)):
 
     updated_user = touristService.update_tourist_profile(db, user_id=user_id, update_data=profile_data)
 
@@ -111,6 +117,17 @@ def update_specific_tourist_profile(
         raise HTTPException(status_code=404, detail="Tourist profile not found")
 
     return updated_user
+
+@app.patch("/tour-guide/{user_id}/profile", response_model=userSchema.UserDetails, tags=["Tour Guides"])
+def update_specific_tour_guide_profile(user_id: int, profile_data: tourGuideSchema.TourGuideProfileUpdate, db: Session = Depends(get_db)):
+
+    updated_user = tourGuideService.update_tour_guide_profile(db, user_id=user_id, update_data=profile_data)
+
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail="Tour guide profile not found")
+
+    return updated_user
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)

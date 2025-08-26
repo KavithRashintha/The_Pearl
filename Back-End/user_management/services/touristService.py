@@ -8,7 +8,7 @@ def get_tourist_profile(db: Session, user_id: int):
 def update_tourist_profile(db: Session, user_id: int, update_data: touristSchema.TouristProfileUpdate):
     db_user = get_tourist_profile(db, user_id)
     if not db_user or not db_user.tourist:
-        return None # User or their tourist profile not found
+        return None
 
     update_dict = update_data.model_dump(exclude_unset=True)
 

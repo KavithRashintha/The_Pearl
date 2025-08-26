@@ -50,3 +50,27 @@ def get_completed_trips_by_tourist(db: Session, tourist_id: int):
         Trip.touristId == tourist_id,
         Trip.tripStatus == "completed"
     ).all()
+
+def get_pending_trips_by_tour_guide(db: Session, tour_guide_id: int):
+    return db.query(Trip).filter(
+        Trip.tourGuideId == tour_guide_id,
+        Trip.tripStatus == "Pending"
+    ).all()
+
+def get_accepted_trips_by_tour_guide(db: Session, tour_guide_id: int):
+    return db.query(Trip).filter(
+        Trip.tourGuideId == tour_guide_id,
+        Trip.tripStatus == "Accepted"
+    ).all()
+
+def get_started_trips_by_tour_guide(db: Session, tour_guide_id: int):
+    return db.query(Trip).filter(
+        Trip.tourGuideId == tour_guide_id,
+        Trip.tripStatus == "Started"
+    ).all()
+
+def get_complated_trips_by_tour_guide(db: Session, tour_guide_id: int):
+    return db.query(Trip).filter(
+        Trip.tourGuideId == tour_guide_id,
+        Trip.tripStatus == "Completed"
+    ).all()
