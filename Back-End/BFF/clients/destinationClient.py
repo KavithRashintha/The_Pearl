@@ -21,6 +21,9 @@ async def get_all_destinations():
 async def get_destination_by_id(destination_id: int):
     return await handle_request("GET", f"{DESTINATION_SERVICE_URL}/destinations/destination/{destination_id}")
 
+async def get_destinations_count():
+    return await handle_request("GET", f"{DESTINATION_SERVICE_URL}/api/destinations/count")
+
 async def update_destination(destination_id: int, destination: proxySchema.DestinationCreated):
     return await handle_request("PUT", f"{DESTINATION_SERVICE_URL}/destinations/update_destination/{destination_id}", json=destination.model_dump())
 

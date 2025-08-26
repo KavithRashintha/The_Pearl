@@ -74,3 +74,6 @@ def get_complated_trips_by_tour_guide(db: Session, tour_guide_id: int):
         Trip.tourGuideId == tour_guide_id,
         Trip.tripStatus == "Completed"
     ).all()
+
+def count_completed_trips(db: Session):
+    return db.query(Trip).filter(Trip.tripStatus == "Completed").count()

@@ -43,3 +43,6 @@ async def get_started_trips_by_tour_guide(tour_guide_id: int):
 
 async def get_completed_trips_by_tour_guide(tour_guide_id: int):
     return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tour-guide/{tour_guide_id}/completed")
+
+async def get_completed_trips_count():
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/api/trips/count/completed")

@@ -72,5 +72,9 @@ def get_started_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get
 def get_completed_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get_db)):
     return tripServices.get_complated_trips_by_tour_guide(db, tourGuideId)
 
+@app.get("/api/trips/count/completed", response_model=dict, tags=["Trips"])
+def get_completed_trips_count(db: Session = Depends(get_db)):
+    return tripServices.count_completed_trips(db)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002)

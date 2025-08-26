@@ -148,6 +148,10 @@ async def update_tourist_profile(user_id: int, profile_data: proxySchema.Tourist
 async def update_tour_guide_profile(user_id:int, profile_data: proxySchema.TourGuideProfileUpdate):
     return await proxyService.update_tour_guide_profile(user_id, profile_data)
 
+@app.get("/api/dashboard/counts", response_model=dict, tags=["Dashboard"])
+async def get_dashboard_counts():
+    return await proxyService.get_dashboard_counts()
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8003)

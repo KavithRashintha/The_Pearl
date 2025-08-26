@@ -89,5 +89,10 @@ def update_selected_destinations_list(selected_destination_list_id: int, new_sel
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
 
+@app.get("/api/destinations/count", response_model=dict, tags=["Destinations"])
+def get_destinations_count(db: Session = Depends(get_db)):
+    count = destinationServices.count_destinations(db)
+    return {"total_destinations": count}
+
 if __name__ == "__main__":
   uvicorn.run(app, host="0.0.0.0", port=8000)

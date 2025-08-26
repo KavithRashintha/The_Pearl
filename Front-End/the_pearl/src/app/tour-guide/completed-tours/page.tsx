@@ -32,7 +32,7 @@ export default function CompletedToursPage() {
                 const data = await response.json();
                 const formattedData = data.map((trip: any) => ({
                     ...trip,
-                    touristName: trip.touristName || 'Peter Maxwell', 
+                    touristName: trip.touristName || 'Peter Maxwell',
                 }));
                 setCompletedTrips(formattedData);
             } catch (err: any) {

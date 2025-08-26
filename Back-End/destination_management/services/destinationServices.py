@@ -35,3 +35,6 @@ def delete_destination(db: Session, destination_id: int):
         db.delete(retrieved_destination)
         db.commit()
         return "Deleted"
+
+def count_destinations(db: Session):
+    return db.query(Destinations).count()

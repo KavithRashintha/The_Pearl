@@ -5,14 +5,13 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 const navLinks = [
-    { name: 'My Profile', href: '/tour-guide/account' },
-    { name: 'Requests', href: '/tour-guide/tour-requests' },
-    { name: 'Active Tours', href: '/tour-guide/active-tours' },
-    { name: 'Chats', href: '/tour-guide/chats' },
-    { name: 'Completed Tours', href: '/tour-guide/completed-tours' },
+    { name: 'Dashboard', href: '/admin/dashboard' },
+    { name: 'Destinations', href: '/admin/destinations' },
+    { name: 'Trips', href: '/admin/trips' },
+    { name: 'Tour Guides', href: '/admin/tour-guides' },
 ];
 
-export default function TourGuideSidebar() {
+export default function AdminSidebar() {
     const pathname = usePathname();
 
     return (
@@ -20,7 +19,7 @@ export default function TourGuideSidebar() {
             <div className="flex flex-col items-center text-center mb-8 mt-20">
                 <div className="mb-2">
                     <Image
-                        src="/images/the_pearl-logo-2.png"
+                        src="/images/the_pearl_logo.png"
                         alt="The Pearl Logo"
                         width={120}
                         height={120}
@@ -52,7 +51,6 @@ export default function TourGuideSidebar() {
             </nav>
 
             <div className="mt-auto">
-
             </div>
         </aside>
     );
