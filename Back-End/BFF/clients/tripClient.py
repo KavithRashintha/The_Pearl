@@ -31,3 +31,15 @@ async def update_trip_status(tripId: int, status_update: proxySchema.TripStatusU
 
 async def update_payment_status(tripId: int, payment_update: proxySchema.TripPaymentStatusUpdate):
     return await handle_request("PATCH", f"{TRIP_SERVICE_URL}/trips/{tripId}/update-payment-status", json=payment_update.model_dump())
+
+async def get_pending_trips_by_tour_guide(tour_guide_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tour-guide/{tour_guide_id}/pending")
+
+async def get_accepted_trips_by_tour_guide(tour_guide_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tour-guide/{tour_guide_id}/accepted")
+
+async def get_started_trips_by_tour_guide(tour_guide_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tour-guide/{tour_guide_id}/started")
+
+async def get_completed_trips_by_tour_guide(tour_guide_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tour-guide/{tour_guide_id}/completed")

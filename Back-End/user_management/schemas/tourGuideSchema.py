@@ -18,6 +18,11 @@ class TourGuide(TourGuideBase):
     userId: int
     model_config = ConfigDict(from_attributes=True)
 
+class TourGuideInfo(TourGuideBase):
+    id: int
+    userId: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
 
 class TourGuideRegistration(BaseModel):
     name: str

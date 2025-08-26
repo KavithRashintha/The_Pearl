@@ -23,6 +23,9 @@ class Trip(TripBase):
     class Config:
         from_attributes = True
 
+class TripWithTouristInfo(Trip):
+    touristName: str
+
 class TripStatusUpdate(BaseModel):
     tripStatus: str
 
@@ -122,6 +125,8 @@ class TourGuide(BaseModel):
     licenseNumber: str
     reviewCount: int
     name: str
+    email: Optional[EmailStr] = None
+    profilePicture: Optional[str] = None
 
 class TourGuideProfileUpdate(BaseModel):
     name: Optional[str] = None

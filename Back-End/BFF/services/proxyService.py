@@ -1,6 +1,7 @@
 from clients import tripClient, destinationClient, userClient
 from schemas import proxySchema
 from typing import List, Dict
+import asyncio
 
 async def create_trip(trip: proxySchema.TripCreated): return await tripClient.create_trip(trip)
 
@@ -9,6 +10,37 @@ async def get_all_trips(): return await tripClient.get_all_trips()
 async def get_trips_by_tourist(touristId: int): return await tripClient.get_trips_by_tourist(touristId)
 
 async def get_trips_by_guide(tourGuideId: int): return await tripClient.get_trips_by_guide(tourGuideId)
+
+async def _enrich_trips_with_tourist_info(trips: List[Dict]) -> List[Dict]:
+    if not trips:
+        return []
+
+    tasks = [userClient.get_tourist_profile(trip["touristId"]) for trip in trips]
+    tourist_profiles_results = await asyncio.gather(*tasks, return_exceptions=True)
+    profile_map = {
+        profile['id']: profile
+        for profile in tourist_profiles_results
+        if not isinstance(profile, Exception) and isinstance(profile, dict)
+    }
+    for trip in trips:
+        profile = profile_map.get(trip["touristId"])
+        trip["touristName"] = profile.get("name", "Tourist Not Found") if profile else "Tourist Not Found"
+
+    return trips
+
+async def get_pending_trips_for_tour_guide(tour_guide_id: int):
+    pending_trips = await tripClient.get_pending_trips_by_tour_guide(tour_guide_id)
+    return await _enrich_trips_with_tourist_info(pending_trips)
+async def get_accepted_trips_for_tour_guide(tour_guide_id: int):
+    accepted_trips = await tripClient.get_accepted_trips_by_tour_guide(tour_guide_id)
+    return await _enrich_trips_with_tourist_info(accepted_trips)
+
+async def get_started_trips_for_tour_guide(tour_guide_id: int):
+    started_trips = await tripClient.get_started_trips_by_tour_guide(tour_guide_id)
+    return await _enrich_trips_with_tourist_info(started_trips)
+async def get_completed_trips_for_tour_guide(tour_guide_id: int):
+    completed_trips = await tripClient.get_completed_trips_by_tour_guide(tour_guide_id)
+    return await _enrich_trips_with_tourist_info(completed_trips)
 
 async def get_completed_trips_by_tourist(touristId: int): return await tripClient.get_completed_trips_by_tourist(touristId)
 
@@ -57,3 +89,4 @@ async def get_tour_guide_profile(user_id: int): return await userClient.get_tour
 async def update_tourist_profile(user_id: int, data: proxySchema.TouristProfileUpdate): return await userClient.update_tourist_profile(user_id, data)
 
 async def update_tour_guide_profile(user_id: int, data: proxySchema.TourGuideProfileUpdate): return await userClient.update_tour_guide_profile(user_id, data)
+

@@ -56,5 +56,21 @@ def update_trip_payment_status(tripId: int, payment_update: tripSchemas.TripPaym
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_payment_status
 
+@app.get("/trips/trip-by-tour-guide/{tourGuideId}/pending", response_model=list[tripSchemas.Trip])
+def get_pending_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get_db)):
+    return tripServices.get_pending_trips_by_tour_guide(db, tourGuideId)
+
+@app.get("/trips/trip-by-tour-guide/{tourGuideId}/accepted", response_model=list[tripSchemas.Trip])
+def get_accepted_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get_db)):
+    return tripServices.get_accepted_trips_by_tour_guide(db, tourGuideId)
+
+@app.get("/trips/trip-by-tour-guide/{tourGuideId}/started", response_model=list[tripSchemas.Trip])
+def get_started_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get_db)):
+    return tripServices.get_started_trips_by_tour_guide(db, tourGuideId)
+
+@app.get("/trips/trip-by-tour-guide/{tourGuideId}/completed", response_model=list[tripSchemas.Trip])
+def get_completed_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(get_db)):
+    return tripServices.get_complated_trips_by_tour_guide(db, tourGuideId)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002)

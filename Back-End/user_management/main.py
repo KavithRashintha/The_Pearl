@@ -42,7 +42,6 @@ def register_new_tourist(
     db_user = authService.register_tourist(db, tourist_reg=tourist_reg_data)
     return {"message": f"Tourist '{db_user.name}' created successfully."}
 
-# Tour Guide Endpoints
 @app.post("/auth/register/guide", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
 def register_new_guide(
         guide_reg_data: tourGuideSchema.TourGuideRegistration,
@@ -85,7 +84,7 @@ def read_current_user_profile(
 ):
     return current_user
 
-@app.get("/users/tour-guides", response_model=list[tourGuideSchema.TourGuide], tags=["Users"])
+@app.get("/users/tour-guides", response_model=list[tourGuideSchema.TourGuideInfo], tags=["Users"])
 def read_tour_guides(db: Session = Depends(get_db)):
     return tourGuideService.get_all_tour_guides(db)
 
