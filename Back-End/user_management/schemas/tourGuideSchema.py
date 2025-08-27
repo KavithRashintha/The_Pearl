@@ -8,10 +8,8 @@ class TourGuideBase(BaseModel):
     licenseNumber: Optional[str] = None
     reviewCount: Optional[int] = None
 
-
 class TourGuideCreate(TourGuideBase):
     pass
-
 
 class TourGuide(TourGuideBase):
     id: int
@@ -29,13 +27,14 @@ class TourGuideInfo(TourGuideBase):
 class TourGuideRegistration(BaseModel):
     name: str
     email: EmailStr
-    role: str = "tour_guide"
     password: str
+    role: str = "tour_guide"
     nic: str
     telephone: str
     address: str
     licenseNumber: str
     reviewCount: int
+    profilePicture: Optional[str] = None
 
 class TourGuideProfileUpdate(BaseModel):
     name: Optional[str] = None

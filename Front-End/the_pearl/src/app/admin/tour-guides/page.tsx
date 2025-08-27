@@ -156,7 +156,7 @@ export default function TourGuidesPage() {
             <div className="space-y-3">
                 {paginatedGuides.map((guide) => (
                     <div key={guide.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 grid grid-cols-5 items-center">
-                        <p className="font-semibold text-gray-800 col-span-2">{guide.name} - {guide.address.split(',')[0]}</p>
+                        <p className="font-semibold text-gray-800 col-span-2 pl-4">{guide.name} - {guide.address.split(',')[0]}</p>
                         <p className="text-gray-600">{guide.nic}</p>
                         <p className="text-gray-600">{guide.telephone}</p>
                         <div className="flex items-center gap-4 justify-self-end">

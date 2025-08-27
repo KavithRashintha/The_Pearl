@@ -13,13 +13,14 @@ async def handle_request(method: str, url: str, **kwargs):
         return response.json()
 
 async def register_tourist(data: proxySchema.TouristRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/tourist", json=data.model_dump())
+
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/tourist", json=data.model_dump(exclude_none=True))
 
 async def register_guide(data: proxySchema.TourGuideRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/guide", json=data.model_dump())
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/guide", json=data.model_dump(exclude_none=True))
 
 async def register_admin(data: proxySchema.AdminRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/admin", json=data.model_dump())
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/admin", json=data.model_dump(exclude_none=True))
 
 async def get_token(form_data: Dict[str, str]):
     async with httpx.AsyncClient() as client:
