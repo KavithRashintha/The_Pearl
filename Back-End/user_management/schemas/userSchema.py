@@ -6,7 +6,7 @@ class UserBase(BaseModel):
     name: str
     email: EmailStr
     role: str
-    profilePicture: str
+    profilePicture: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -21,6 +21,7 @@ class UserDetails(User):
     tourist: Optional['Tourist'] = None
     tour_guide: Optional['TourGuide'] = None
     admin: Optional['Admin'] = None
+    profilePicture: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

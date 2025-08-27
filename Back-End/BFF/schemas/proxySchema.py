@@ -87,6 +87,7 @@ class TouristRegistration(BaseModel):
     country: str
     address: str
     birthDay: str
+    profilePicture: Optional[str] = None
 
 class TourGuideRegistration(BaseModel):
     name: str
@@ -98,6 +99,7 @@ class TourGuideRegistration(BaseModel):
     address: str
     licenseNumber: str
     reviewCount: int
+    profilePicture: Optional[str] = None
 
 class AdminRegistration(BaseModel):
     name: str

@@ -71,7 +71,7 @@ async def get_all_destinations():
 async def get_destination_by_id(id: int):
     return await proxyService.get_destination_by_id(id)
 
-@app.put("/api/destinations/update_destination/{id}", response_model=proxySchema.Destination, tags=["Destinations"])
+@app.patch("/api/destinations/update_destination/{id}", response_model=proxySchema.Destination, tags=["Destinations"])
 async def update_destination(id: int, destination: proxySchema.DestinationCreated):
     return await proxyService.update_destination(id, destination)
 
@@ -147,6 +147,10 @@ async def update_tourist_profile(user_id: int, profile_data: proxySchema.Tourist
 @app.patch("/api/tour-guide/{user_id}/profile", response_model=proxySchema.UserDetails, tags=["Tour Guides"])
 async def update_tour_guide_profile(user_id:int, profile_data: proxySchema.TourGuideProfileUpdate):
     return await proxyService.update_tour_guide_profile(user_id, profile_data)
+
+@app.delete("/api/tour-guide/delete-tour-guide/{user_id}", status_code=status.HTTP_200_OK, tags=["Tour Guides"])
+async def delete_tour_guide(user_id: int):
+    return await proxyService.delete_tour_guide(user_id)
 
 @app.get("/api/dashboard/counts", response_model=dict, tags=["Dashboard"])
 async def get_dashboard_counts():

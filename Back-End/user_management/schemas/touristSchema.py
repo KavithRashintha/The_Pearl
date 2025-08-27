@@ -28,6 +28,7 @@ class TouristRegistration(BaseModel):
     country: str
     address: str
     birthDay: str
+    profilePicture: str
 
 
 class TouristProfileUpdate(BaseModel):

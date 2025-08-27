@@ -86,6 +86,8 @@ async def get_current_user(token: str): return await userClient.get_current_user
 
 async def get_all_guides(): return await userClient.get_all_guides()
 
+async def delete_tour_guide(user_id: int): return await userClient.delete_tour_guide(user_id)
+
 async def get_tourist_profile(user_id: int): return await userClient.get_tourist_profile(user_id)
 
 async def get_tour_guide_profile(user_id: int): return await userClient.get_tour_guide_profile(user_id)

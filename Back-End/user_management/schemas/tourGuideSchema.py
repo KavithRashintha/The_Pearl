@@ -3,10 +3,10 @@ from typing import Optional
 
 class TourGuideBase(BaseModel):
     nic: str
-    telephone: str
-    address: str
-    licenseNumber: str
-    reviewCount: int
+    telephone: Optional[str] = None
+    address: Optional[str] = None
+    licenseNumber: Optional[str] = None
+    reviewCount: Optional[int] = None
 
 
 class TourGuideCreate(TourGuideBase):
@@ -22,6 +22,8 @@ class TourGuideInfo(TourGuideBase):
     id: int
     userId: int
     name: str
+    email: EmailStr
+    profilePicture: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class TourGuideRegistration(BaseModel):
@@ -42,5 +44,6 @@ class TourGuideProfileUpdate(BaseModel):
     address: Optional[str] = None
     nic: Optional[str] = None
     licenseNumber: Optional[str] = None
+    profilePicture: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

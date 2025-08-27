@@ -36,7 +36,7 @@ def get_destination_by_id(id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=404, detail="Invalid Destination ID")
 
 
-@app.put("/destinations/update_destination/{id}", response_model=destinationSchemas.Destination)
+@app.patch("/destinations/update_destination/{id}", response_model=destinationSchemas.Destination)
 def update_destination(destination: destinationSchemas.DestinationCreated, id: int, db: Session = Depends(get_db)):
     db_update = destinationServices.update_destination(db, destination, id)
     if db_update is None:

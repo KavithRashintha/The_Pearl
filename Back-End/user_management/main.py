@@ -132,6 +132,9 @@ def update_specific_tour_guide_profile(user_id: int, profile_data: tourGuideSche
 def get_user_counts(db: Session = Depends(get_db)):
     return userService.count_users_by_role(db)
 
+@app.delete("/tour-guide/delete-tour-guide/{user_id}")
+def delete_tour_guide(user_id: int, db: Session = Depends(get_db)):
+    return tourGuideService.delete_tour_guide(db, user_id)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
