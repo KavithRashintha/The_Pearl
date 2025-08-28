@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 type DecodedToken = {
     sub: string;
@@ -43,7 +44,7 @@ export default function LoginPage() {
             }
 
             const data = await response.json();
-            localStorage.setItem('accessToken', data.access_token);
+            Cookies.set('accessToken', data.access_token, { expires: 1, secure: true });
             toast.success('Login successful!');
 
             const decodedToken = jwtDecode<DecodedToken>(data.access_token);
