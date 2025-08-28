@@ -6,6 +6,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { jwtDecode } from 'jwt-decode';
+
+type DecodedToken = {
+    sub: string;
+    role: 'admin' | 'tourist' | 'tour_guide';
+    exp: number;
+};
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -38,7 +45,24 @@ export default function LoginPage() {
             const data = await response.json();
             localStorage.setItem('accessToken', data.access_token);
             toast.success('Login successful!');
-            router.push('/admin/dashboard');
+
+            const decodedToken = jwtDecode<DecodedToken>(data.access_token);
+            const userRole = decodedToken.role;
+
+            switch (userRole) {
+                case 'admin':
+                    router.push('/admin/dashboard');
+                    break;
+                case 'tourist':
+                    router.push('/tourist/home');
+                    break;
+                case 'tour_guide':
+                    router.push('/tour-guide/account');
+                    break;
+                default:
+                    router.push('/');
+                    break;
+            }
 
         } catch (error: any) {
             toast.error(error.message);
@@ -114,7 +138,7 @@ export default function LoginPage() {
                     </form>
                     <p className="mt-6 text-sm text-center text-gray-600">
                         Do not have an account? {' '}
-                        <Link href="/signup" className="font-medium text-violet-600 hover:underline">
+                        <Link href="/auth/signup" className="font-medium text-violet-600 hover:underline">
                             Sign Up
                         </Link>
                     </p>
