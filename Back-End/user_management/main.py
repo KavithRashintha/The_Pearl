@@ -65,7 +65,7 @@ def login_for_access_token(
         db: Session = Depends(get_db)
 ):
     user = userService.get_user_by_email(db, email=form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not verify_password(form_data.password, user.hashedPassword):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -73,7 +73,7 @@ def login_for_access_token(
         )
 
     access_token = authService.create_access_token(
-        data={"sub": user.email, "role": user.role}
+        data={"sub": user.email, "role": user.role, "userId": user.id}
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
@@ -128,6 +128,13 @@ def update_specific_tour_guide_profile(user_id: int, profile_data: tourGuideSche
 
     return updated_user
 
+@app.get("/api/users/count", response_model=dict, tags=["Users"])
+def get_user_counts(db: Session = Depends(get_db)):
+    return userService.count_users_by_role(db)
+
+@app.delete("/tour-guide/delete-tour-guide/{user_id}")
+def delete_tour_guide(user_id: int, db: Session = Depends(get_db)):
+    return tourGuideService.delete_tour_guide(db, user_id)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)

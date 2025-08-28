@@ -81,23 +81,25 @@ class Token(BaseModel):
 class TouristRegistration(BaseModel):
     name: str
     email: EmailStr
-    role: str = "tourist"
     password: str
+    role: str = "tourist"
     passportNumber: str
     country: str
     address: str
     birthDay: str
+    profilePicture: Optional[str] = None
 
 class TourGuideRegistration(BaseModel):
     name: str
     email: EmailStr
-    role: str = "tour_guide"
     password: str
+    role: str = "tour_guide"
     nic: str
     telephone: str
     address: str
     licenseNumber: str
     reviewCount: int
+    profilePicture: Optional[str] = None
 
 class AdminRegistration(BaseModel):
     name: str
@@ -120,12 +122,12 @@ class TourGuide(BaseModel):
     id: int
     userId: int
     nic: str
-    telephone: str
-    address: str
-    licenseNumber: str
-    reviewCount: int
+    telephone: Optional[str] = None
+    address: Optional[str] = None
+    licenseNumber: Optional[str] = None
+    reviewCount: Optional[int] = None
     name: str
-    email: Optional[EmailStr] = None
+    email: EmailStr
     profilePicture: Optional[str] = None
 
 class TourGuideProfileUpdate(BaseModel):
@@ -135,6 +137,7 @@ class TourGuideProfileUpdate(BaseModel):
     address: Optional[str] = None
     nic: Optional[str] = None
     licenseNumber: Optional[str] = None
+    profilePicture: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -147,4 +150,5 @@ class UserDetails(BaseModel):
     tourist: Optional[dict] = None
     tour_guide: Optional[dict] = None
     admin: Optional[dict] = None
+
     model_config = ConfigDict(from_attributes=True)

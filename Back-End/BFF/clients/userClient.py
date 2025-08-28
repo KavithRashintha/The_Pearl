@@ -13,13 +13,14 @@ async def handle_request(method: str, url: str, **kwargs):
         return response.json()
 
 async def register_tourist(data: proxySchema.TouristRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/tourist", json=data.model_dump())
+
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/tourist", json=data.model_dump(exclude_none=True))
 
 async def register_guide(data: proxySchema.TourGuideRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/guide", json=data.model_dump())
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/guide", json=data.model_dump(exclude_none=True))
 
 async def register_admin(data: proxySchema.AdminRegistration):
-    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/admin", json=data.model_dump())
+    return await handle_request("POST", f"{USER_SERVICE_URL}/auth/register/admin", json=data.model_dump(exclude_none=True))
 
 async def get_token(form_data: Dict[str, str]):
     async with httpx.AsyncClient() as client:
@@ -45,3 +46,9 @@ async def update_tourist_profile(user_id: int, data: proxySchema.TouristProfileU
 
 async def update_tour_guide_profile(user_id: int, data: proxySchema.TourGuideProfileUpdate):
     return await handle_request("PATCH", f"{USER_SERVICE_URL}/tour-guide/{user_id}/profile", json=data.model_dump(exclude_unset=True))
+
+async def delete_tour_guide(user_id: int):
+    return await handle_request("DELETE", f"{USER_SERVICE_URL}/tour-guide/delete-tour-guide/{user_id}")
+
+async def get_users_count():
+    return await handle_request("GET", f"{USER_SERVICE_URL}/api/users/count")

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 
@@ -24,3 +26,10 @@ class AdminRegistration(BaseModel):
     email: EmailStr
     password: str
     role: str = "admin"
+    profilePicture: str
+
+class AdminProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    profilePicture: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)

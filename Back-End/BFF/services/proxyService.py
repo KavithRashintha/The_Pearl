@@ -11,6 +11,8 @@ async def get_trips_by_tourist(touristId: int): return await tripClient.get_trip
 
 async def get_trips_by_guide(tourGuideId: int): return await tripClient.get_trips_by_guide(tourGuideId)
 
+async def get_completed_trips_count(): return await tripClient.get_completed_trips_count()
+
 async def _enrich_trips_with_tourist_info(trips: List[Dict]) -> List[Dict]:
     if not trips:
         return []
@@ -58,6 +60,8 @@ async def update_destination(id: int, destination: proxySchema.DestinationCreate
 
 async def delete_destination(id: int): return await destinationClient.delete_destination(id)
 
+async def get_destinations_count(): return await destinationClient.get_destinations_count()
+
 async def create_wishlist(wishlist: proxySchema.WishListCreated): return await destinationClient.create_wishlist(wishlist)
 
 async def get_wishlist(touristId: int): return await destinationClient.get_wishlist(touristId)
@@ -82,6 +86,8 @@ async def get_current_user(token: str): return await userClient.get_current_user
 
 async def get_all_guides(): return await userClient.get_all_guides()
 
+async def delete_tour_guide(user_id: int): return await userClient.delete_tour_guide(user_id)
+
 async def get_tourist_profile(user_id: int): return await userClient.get_tourist_profile(user_id)
 
 async def get_tour_guide_profile(user_id: int): return await userClient.get_tour_guide_profile(user_id)
@@ -89,4 +95,25 @@ async def get_tour_guide_profile(user_id: int): return await userClient.get_tour
 async def update_tourist_profile(user_id: int, data: proxySchema.TouristProfileUpdate): return await userClient.update_tourist_profile(user_id, data)
 
 async def update_tour_guide_profile(user_id: int, data: proxySchema.TourGuideProfileUpdate): return await userClient.update_tour_guide_profile(user_id, data)
+
+async def get_users_count(): return await userClient.get_users_count()
+
+async def get_dashboard_counts():
+    results = await asyncio.gather(
+        destinationClient.get_destinations_count(),
+        tripClient.get_completed_trips_count(),
+        userClient.get_users_count(),
+        return_exceptions=True
+    )
+
+    destinations_data, trips_data, users_data = results
+
+    dashboard_data = {
+        "total_destinations": destinations_data.get("total_destinations", 0) if not isinstance(destinations_data, Exception) else 0,
+        "completed_trips_count": trips_data.get("completed_trips_count", 0) if not isinstance(trips_data, Exception) else 0,
+        "tourists_count": users_data.get("tourists_count", 0) if not isinstance(users_data, Exception) else 0,
+        "tour_guides_count": users_data.get("tour_guides_count", 0) if not isinstance(users_data, Exception) else 0,
+    }
+
+    return dashboard_data
 

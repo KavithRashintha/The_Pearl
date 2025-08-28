@@ -36,7 +36,7 @@ def get_destination_by_id(id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=404, detail="Invalid Destination ID")
 
 
-@app.put("/destinations/update_destination/{id}", response_model=destinationSchemas.Destination)
+@app.patch("/destinations/update_destination/{id}", response_model=destinationSchemas.Destination)
 def update_destination(destination: destinationSchemas.DestinationCreated, id: int, db: Session = Depends(get_db)):
     db_update = destinationServices.update_destination(db, destination, id)
     if db_update is None:
@@ -88,6 +88,11 @@ def update_selected_destinations_list(selected_destination_list_id: int, new_sel
     if not updated_list:
         raise HTTPException(status_code=404, detail="Wishlist not found")
     return updated_list
+
+@app.get("/api/destinations/count", response_model=dict, tags=["Destinations"])
+def get_destinations_count(db: Session = Depends(get_db)):
+    count = destinationServices.count_destinations(db)
+    return {"total_destinations": count}
 
 if __name__ == "__main__":
   uvicorn.run(app, host="0.0.0.0", port=8000)
