@@ -65,7 +65,7 @@ def login_for_access_token(
         db: Session = Depends(get_db)
 ):
     user = userService.get_user_by_email(db, email=form_data.username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not verify_password(form_data.password, user.hashedPassword):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
