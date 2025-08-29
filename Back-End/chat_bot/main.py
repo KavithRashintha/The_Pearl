@@ -7,6 +7,7 @@ from langchain_pinecone import PineconeVectorStore
 from starlette.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+import uvicorn
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 docsearch = PineconeVectorStore.from_existing_index(index_name, embeddings)
 
-llm = ChatGroq(temperature=0, groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama3-8b-8192")
+llm = ChatGroq(temperature=0, groq_api_key=os.getenv(""), model_name="llama3-8b-8192")
 chain = load_qa_chain(llm, chain_type="stuff")
 
 class Query(BaseModel):
@@ -39,3 +40,6 @@ async def chat(query: Query):
     answer = chain.run(input_documents=similar_docs, question=query.query)
 
     return {"answer": answer}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8004)
