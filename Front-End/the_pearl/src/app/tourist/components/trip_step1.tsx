@@ -7,13 +7,14 @@ import { TripFormData } from '@/app/tourist/trips/page';
 type Step1Props = {
     nextStep: () => void;
     setFormData: React.Dispatch<React.SetStateAction<TripFormData>>;
+    openChat: () => void;
 };
 
 type Destination = { id: number; name: string; image: string; };
 type WishlistItem = { id: number; touristId: number; destinations: number[]; };
 type SelectedDestinationsItem = { id: number; touristId: number; selectedDestinations: number[]; };
 
-export default function Step1_SelectDestinations({ nextStep, setFormData }: Step1Props) {
+export default function Step1_SelectDestinations({ nextStep, setFormData, openChat }: Step1Props) {
     const [wishlist, setWishlist] = useState<Destination[]>([]);
     const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
@@ -152,7 +153,10 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
         <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-end mb-8 md:mb-12">
                 <span className="text-base md:text-base font-medium text-gray-600">Ask From Wandy</span>
-                <button className="flex items-center justify-center h-12 w-12 ml-2 rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors">
+                <button
+                    onClick={openChat}
+                    className="flex items-center justify-center h-12 w-12 ml-2 rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                >
                     <FiWind size={24} />
                 </button>
             </div>
@@ -177,7 +181,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData }: Step
                         </div>
                     )}
                 </div>
-                
+
                 <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
                     <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-violet-600">Make The Dream Real</h2>
                     {selectedLoading ? (
