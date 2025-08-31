@@ -65,7 +65,6 @@ def register_tour_guide(db: Session, tour_guide_reg: tourGuideSchema.TourGuideRe
     db.commit()
     db.refresh(new_user)
 
-    # CORRECTED: Added the missing fields
     new_guide = tourGuideModels.TourGuide(
         userId=new_user.id,
         nic=tour_guide_reg.nic,
@@ -85,18 +84,18 @@ def register_admin(db: Session, admin_reg):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Create User
     new_user = userModels.User(
         name=admin_reg.name,
         email=admin_reg.email,
         role="admin",
-        hashedPassword=hash_password(admin_reg.password)
+        hashedPassword=hash_password(admin_reg.password),
+        profilePicture=admin_reg.profilePicture
     )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # Create Admin profile
     new_admin = adminModels.Admin(
         userId=new_user.id
     )

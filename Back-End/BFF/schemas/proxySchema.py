@@ -106,6 +106,7 @@ class AdminRegistration(BaseModel):
     email: EmailStr
     password: str
     role: str = "admin"
+    profilePicture: Optional[str] = None
 
 class TouristProfileUpdate(BaseModel):
     name: Optional[str] = None

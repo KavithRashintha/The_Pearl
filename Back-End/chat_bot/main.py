@@ -27,7 +27,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 docsearch = PineconeVectorStore.from_existing_index(index_name, embeddings)
 
-llm = ChatGroq(temperature=0, groq_api_key=os.getenv(""), model_name="llama3-8b-8192")
+llm = ChatGroq(temperature=0, groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama3-8b-8192")
 chain = load_qa_chain(llm, chain_type="stuff")
 
 class Query(BaseModel):

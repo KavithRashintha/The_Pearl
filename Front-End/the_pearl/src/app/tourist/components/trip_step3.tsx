@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { TripFormData, TourGuide } from '@/app/tourist/trips/page';
 import { FiMessageSquare } from 'react-icons/fi';
@@ -9,9 +11,21 @@ type StepProps = {
     setFormData: React.Dispatch<React.SetStateAction<TripFormData>>;
 };
 
+// New type that matches the actual API response for a tour guide
+type ApiTourGuide = {
+    id: number;
+    userId: number;
+    name: string;
+    address: string;
+    telephone: string;
+    reviewCount: number;
+    licenseNumber: string;
+    email: string | null;
+    profilePicture: string | null;
+};
+
 const StarRating = ({ rating }: { rating: number }) => {
     const numericRating = typeof rating === 'number' ? rating : 0;
-
     const totalStars = 5;
     const fullStars = Math.floor(numericRating);
     const halfStar = numericRating % 1 !== 0;
@@ -27,7 +41,7 @@ const StarRating = ({ rating }: { rating: number }) => {
 };
 
 export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFormData }: StepProps) {
-    const [guides, setGuides] = useState<TourGuide[]>([]);
+    const [guides, setGuides] = useState<ApiTourGuide[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +52,7 @@ export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFor
                 if (!response.ok) {
                     throw new Error(`Failed to fetch tour guides: ${response.statusText}`);
                 }
-                const data: TourGuide[] = await response.json();
+                const data: ApiTourGuide[] = await response.json();
                 setGuides(data);
             } catch (err: any) {
                 setError(err.message);
@@ -51,8 +65,16 @@ export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFor
         fetchGuides();
     }, []);
 
-    const handleSelectGuide = (guide: TourGuide) => {
-        setFormData(prev => ({ ...prev, selectedGuide: guide }));
+    const handleSelectGuide = (guide: ApiTourGuide) => {
+        const guideForForm: TourGuide = {
+            id: guide.userId,
+            name: guide.name,
+            location: guide.address,
+            phone: guide.telephone,
+            tripsCompleted: guide.reviewCount,
+            rating: guide.reviewCount,
+        };
+        setFormData(prev => ({ ...prev, selectedGuide: guideForForm }));
         nextStep();
     };
 
@@ -89,9 +111,9 @@ export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFor
                                 <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"><FiMessageSquare size={20} /></button>
                                 <button
                                     onClick={() => handleSelectGuide(guide)}
-                                    className={`px-6 py-2 rounded-lg font-medium transition-colors ${formData.selectedGuide?.id === guide.id ? 'bg-green-500 text-white' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}
+                                    className={`px-6 py-2 rounded-lg font-medium transition-colors ${formData.selectedGuide?.id === guide.userId ? 'bg-green-500 text-white' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}
                                 >
-                                    {formData.selectedGuide?.id === guide.id ? 'Selected' : 'Select'}
+                                    {formData.selectedGuide?.id === guide.userId ? 'Selected' : 'Select'}
                                 </button>
                             </div>
                         </div>

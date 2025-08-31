@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FiEdit, FiSave, FiXCircle } from 'react-icons/fi';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 type TourGuideProfile = {
     name: string;
@@ -15,6 +17,14 @@ type TourGuideProfile = {
         nic: string;
         licenseNumber: string;
     };
+};
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
 };
 
 const DetailField = ({label, value, isEditing = false, name, onChange}: {
@@ -52,13 +62,30 @@ export default function TourGuideProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const tourGuideUserId = 2;
+    const [tourGuideId, setTourGuideId] = useState<number | null>(null);
+    const [accessToken, setAccessToken] = useState()
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTourGuideId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
+
+
+    useEffect(() => {
+        if (tourGuideId == null) {
+            return;
+        }
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8003/api/tour-guide/${tourGuideUserId}/profile`);
+                const response = await fetch(`http://127.0.0.1:8003/api/tour-guide/${tourGuideId}/profile`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch tour guide profile.');
                 }
@@ -73,7 +100,7 @@ export default function TourGuideProfilePage() {
         };
 
         fetchProfile();
-    }, [tourGuideUserId]);
+    }, [tourGuideId]);
 
     const handleEdit = () => {
         setEditableProfile(profile);
@@ -105,7 +132,6 @@ export default function TourGuideProfilePage() {
 
         setIsSaving(true);
 
-        // 2. Map data to the API payload structure
         const payload = {
             name: editableProfile.name,
             email: editableProfile.email,
@@ -116,9 +142,15 @@ export default function TourGuideProfilePage() {
         };
 
         try {
-            const response = await fetch(`http://127.0.0.1:8003/api/tour-guide/${tourGuideUserId}/profile`, {
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+
+            const response = await fetch(`http://127.0.0.1:8003/api/tour-guide/${tourGuideId}/profile`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(payload),
             });
 
@@ -127,10 +159,10 @@ export default function TourGuideProfilePage() {
                 throw new Error(errorData.detail || 'Failed to update profile.');
             }
 
-            // 4. Handle success
+            toast.success('Profile updated successfully!');
             setProfile(editableProfile);
             setIsEditing(false);
-            toast.success('Profile updated successfully!');
+
 
         } catch (error: any) {
             toast.error(error.message);

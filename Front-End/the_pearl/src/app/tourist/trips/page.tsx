@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Toaster } from 'react-hot-toast';
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 import Step1_SelectDestinations from '@/app/tourist/components/trip_step1';
 import Step2_FillInformation from '@/app/tourist/components/trip_step2';
@@ -31,7 +33,16 @@ export type TripFormData = {
     numChildren: number;
     startDate: string;
     numDays: number;
+    tripPayment: number;
     selectedGuide: TourGuide | null;
+};
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
 };
 
 export default function PlanTripPage() {
@@ -48,6 +59,7 @@ export default function PlanTripPage() {
         numChildren: 0,
         startDate: '',
         numDays: 1,
+        tripPayment: 0,
         selectedGuide: null,
     });
 
@@ -106,3 +118,4 @@ export default function PlanTripPage() {
         </div>
     );
 }
+

@@ -1,5 +1,8 @@
+"use client";
+
 import { TripFormData } from '@/app/tourist/trips/page';
 import toast from 'react-hot-toast';
+import { ChangeEvent } from 'react';
 
 type StepProps = {
     nextStep: () => void;
@@ -8,7 +11,7 @@ type StepProps = {
     setFormData: React.Dispatch<React.SetStateAction<TripFormData>>;
 };
 
-const FormInput = ({ label, name, value, onChange, type = 'text', required = false }: { label: string, name: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean }) => (
+const FormInput = ({ label, name, value, onChange, type = 'text', required = false }: { label: string, name: string, value: string | number, onChange: (e: ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
         <input
@@ -25,7 +28,7 @@ const FormInput = ({ label, name, value, onChange, type = 'text', required = fal
 
 export default function Step2_FillInformation({ nextStep, prevStep, formData, setFormData }: StepProps) {
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -34,7 +37,7 @@ export default function Step2_FillInformation({ nextStep, prevStep, formData, se
         const requiredFields: (keyof TripFormData)[] = [
             'email', 'contact', 'country',
             'passportNumber', 'address', 'numAdults',
-            'numChildren', 'startDate', 'numDays'
+            'numChildren', 'startDate', 'numDays', 'tripPayment'
         ];
 
         const emptyField = requiredFields.find(field => {
@@ -67,6 +70,7 @@ export default function Step2_FillInformation({ nextStep, prevStep, formData, se
                 <FormInput label="Number of Children" name="numChildren" value={formData.numChildren} onChange={handleChange} type="number" required/>
                 <FormInput label="Starting Date" name="startDate" value={formData.startDate} onChange={handleChange} type="date" required/>
                 <FormInput label="Number of Days" name="numDays" value={formData.numDays} onChange={handleChange} type="number" required/>
+                <FormInput label="Budget" name="tripPayment" value={formData.tripPayment} onChange={handleChange} type="number" required/>
             </div>
 
             <div className="mt-8 pt-6 border-t">
@@ -83,3 +87,4 @@ export default function Step2_FillInformation({ nextStep, prevStep, formData, se
         </div>
     );
 }
+

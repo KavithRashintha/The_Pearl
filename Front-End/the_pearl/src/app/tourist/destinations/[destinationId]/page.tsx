@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 interface Destination {
     id: number;
@@ -16,6 +18,14 @@ interface Destination {
     activities: string[];
     climate: string;
 }
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
 
 async function getDestination(id: number): Promise<Destination | null> {
     try {
@@ -38,17 +48,28 @@ async function getDestination(id: number): Promise<Destination | null> {
 export default function DestinationPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [destination, setDestination] = useState<Destination | null>(null);
+    const [touristId, setTouristId] = useState<number | null>(null);
     const params = useParams();
     const destinationId = params.destinationId as string;
 
-    // Fetch destination data
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setTouristId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+
         if (!destinationId) return;
 
         const fetchDestination = async () => {
             const data = await getDestination(Number(destinationId));
             if (!data) {
-                return <div>Destination not found.</div>;
+                console.error("Destination not found.");
+                return;
             }
             setDestination(data);
         };
@@ -57,12 +78,22 @@ export default function DestinationPage() {
     }, [destinationId]);
 
     const handleAddToDreamList = async () => {
+        const token = Cookies.get('accessToken');
         if (!destination) return;
+        if (!token || !touristId) {
+            toast.error("You must be logged in to perform this action.");
+            return;
+        }
 
         setIsAdding(true);
 
         try {
-            const wishlistResponse = await fetch('http://127.0.0.1:8003/api/wishlist/1');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+
+            const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`, { headers });
 
             if (wishlistResponse.ok) {
                 const wishlistData = await wishlistResponse.json();
@@ -70,11 +101,9 @@ export default function DestinationPage() {
                 if (!wishlistData) {
                     const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: headers,
                         body: JSON.stringify({
-                            touristId: 1,
+                            touristId: touristId,
                             destinations: [destination.id]
                         })
                     });
@@ -93,9 +122,7 @@ export default function DestinationPage() {
                             `http://127.0.0.1:8003/api/wishlist/${wishlistId}/update-destinations`,
                             {
                                 method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
+                                headers: headers,
                                 body: JSON.stringify(updatedDestinations)
                             }
                         );
@@ -108,7 +135,22 @@ export default function DestinationPage() {
                         toast.info(`${destination.name} is already in your Dream List`);
                     }
                 }
-            } else {
+            } else if (wishlistResponse.status === 404) {
+                const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        touristId: touristId,
+                        destinations: [destination.id]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create wishlist');
+                }
+                toast.success(`${destination.name} added to your Dream List!`);
+            }
+            else {
                 throw new Error('Failed to get the wishlist');
             }
         } catch (error) {
@@ -171,3 +213,4 @@ export default function DestinationPage() {
         </div>
     );
 }
+

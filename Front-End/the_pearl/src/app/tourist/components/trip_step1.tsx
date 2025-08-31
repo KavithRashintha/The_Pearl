@@ -3,11 +3,22 @@
 import { useState, useEffect } from 'react';
 import { FiTrash2, FiWind, FiList } from 'react-icons/fi';
 import { TripFormData } from '@/app/tourist/trips/page';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-toastify';
 
 type Step1Props = {
     nextStep: () => void;
     setFormData: React.Dispatch<React.SetStateAction<TripFormData>>;
     openChat: () => void;
+};
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
 };
 
 type Destination = { id: number; name: string; image: string; };
@@ -19,10 +30,27 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
     const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedLoading, setSelectedLoading] = useState(true);
-    const touristId = 1;
+    const [touristId, setTouristId] = useState<number | null>(null);
+    const [accessToken, setAccessToken] = useState();
+
+    useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTouristId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
+            if (touristId == null) {
+                return;
+            }
             try {
                 const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
                 if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
@@ -58,19 +86,40 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
         };
 
         fetchData();
-    }, []);
+    }, [touristId]);
 
     const handleAddToSelected = async (destinationId: number) => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
             if (selectedResponse.ok) {
                 const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+
+                if(!selectedData){
+                    const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations/add', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({ touristId: touristId, selectedDestinations: [destinationId] })
+                    });
+                    if (createResponse.ok) {
+                        const destinationToAdd = wishlist.find(dest => dest.id === destinationId);
+                        if (destinationToAdd) {
+                            setSelectedDestinations([destinationToAdd]);
+                        }
+                    }
+                }
+
                 const updatedSelected = [...selectedData.selectedDestinations, destinationId];
                 const updateResponse = await fetch(
                     `http://127.0.0.1:8003/api/selected-destinations/${selectedData.id}/updated-selected-destinations`,
                     {
                         method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(updatedSelected)
                     }
                 );
@@ -80,19 +129,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                         setSelectedDestinations(prev => [...prev, destinationToAdd]);
                     }
                 }
-            } else if (selectedResponse.status === 404) {
-                const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ touristId: 1, selectedDestinations: [destinationId] })
-                });
-                if (createResponse.ok) {
-                    const destinationToAdd = wishlist.find(dest => dest.id === destinationId);
-                    if (destinationToAdd) {
-                        setSelectedDestinations([destinationToAdd]);
-                    }
-                }
-            } else {
+            }  else {
                 throw new Error('Failed to get the selected destinations');
             }
         } catch (error) {
@@ -101,6 +138,12 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
     };
 
     const handleRemoveFromSelected = async (destinationId: number) => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
             if (!selectedResponse.ok) throw new Error('Failed to fetch selected destinations');
@@ -110,7 +153,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                 `http://127.0.0.1:8003/api/selected-destinations/${selectedData.id}/updated-selected-destinations`,
                 {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(updatedSelected)
                 }
             );
@@ -123,6 +166,12 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
     };
 
     const handleRemoveFromWishlist = async (destinationId: number) => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
             if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
@@ -130,7 +179,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
             const updatedDestinations = wishlistData.destinations.filter(id => id !== destinationId);
             const updateResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${wishlistData.id}/update-destinations`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(updatedDestinations)
             });
             if (updateResponse.ok) {

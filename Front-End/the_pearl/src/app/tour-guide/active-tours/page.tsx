@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import AcceptedTripCard from '@/app/tour-guide/components/accepted_card';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export type AcceptedTrip = {
     id: number;
@@ -20,15 +22,39 @@ export type AcceptedTrip = {
     touristPassportNumber: string;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
 export default function ActiveToursPage() {
     const [activeTrips, setActiveTrips] = useState<AcceptedTrip[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedTripId, setExpandedTripId] = useState<number | null>(null);
-
-    const tourGuideId = 1;
+    const [accessToken, setAccessToken] = useState();
+    const [tourGuideId, setTourGuideId] = useState<number | null>(null);
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTourGuideId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (tourGuideId == null) {
+            return;
+        }
         const fetchActiveTrips = async () => {
             try {
                 const [acceptedResponse, startedResponse] = await Promise.all([
@@ -58,10 +84,16 @@ export default function ActiveToursPage() {
     };
 
     const handleStatusUpdate = async (tripId: number, newStatus: string) => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const response = await fetch(`http://localhost:8003/api/trips/${tripId}/update-trip-status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ tripStatus: newStatus }),
             });
 
@@ -79,10 +111,16 @@ export default function ActiveToursPage() {
     };
 
     const handlePaymentStatusUpdate = async (tripId: number, newStatus: string) => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const response = await fetch(`http://localhost:8003/api/trips/${tripId}/update-payment-status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ paymentStatus: newStatus }),
             });
 
