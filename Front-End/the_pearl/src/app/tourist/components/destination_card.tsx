@@ -3,7 +3,10 @@
 import Image from 'next/image';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 type DestinationCardProps = {
     id: number;
@@ -13,16 +16,49 @@ type DestinationCardProps = {
     onAddToItinerary: (id: number) => void;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
 export default function DestinationCard({ id, name, image, onAddToItinerary }: DestinationCardProps) {
     const [isAdding, setIsAdding] = useState(false);
+    const [touristId, setTouristId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setTouristId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
 
     const handleAddClick = async (e: React.MouseEvent) => {
+
+        const token = Cookies.get('accessToken');
+        if (!token || !touristId) {
+            toast.error("You must be logged in to perform this action.");
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
         setIsAdding(true);
 
         try {
-            const wishlistResponse = await fetch('http://127.0.0.1:8003/api/wishlist/1');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+
+            const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`, { headers });
 
             if (wishlistResponse.ok) {
                 const wishlistData = await wishlistResponse.json();
@@ -30,11 +66,9 @@ export default function DestinationCard({ id, name, image, onAddToItinerary }: D
                 if(!wishlistData){
                     const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: headers,
                         body: JSON.stringify({
-                            touristId: 1,
+                            touristId: touristId,
                             destinations: [id]
                         })
                     });
@@ -42,22 +76,18 @@ export default function DestinationCard({ id, name, image, onAddToItinerary }: D
                     if (!response.ok) {
                         throw new Error('Failed to add to wishlist');
                     }
+                    toast.success(`${name} added to your Dream List!`);
                 }else{
                     const destinations: number[] = wishlistData.destinations || [];
                     const wishlistId = wishlistData.id;
 
-                    let updatedDestinations = destinations.includes(id)
-                        ? destinations
-                        : [...destinations, id];
-
                     if (!destinations.includes(id)) {
+                        const updatedDestinations = [...destinations, id];
                         const response = await fetch(
                             `http://127.0.0.1:8003/api/wishlist/${wishlistId}/update-destinations`,
                             {
                                 method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
+                                headers: headers,
                                 body: JSON.stringify(updatedDestinations)
                             }
                         );
@@ -65,17 +95,34 @@ export default function DestinationCard({ id, name, image, onAddToItinerary }: D
                         if (!response.ok) {
                             throw new Error('Failed to update wishlist');
                         }
+                        toast.success(`${name} added to your Dream List!`);
                     } else {
-                        console.log(`Destination ${id} already exists in wishlist`);
+                        toast.info(`${name} is already in your Dream List`);
                     }
                 }
-            } else {
+            } else if (wishlistResponse.status === 404) {
+                const response = await fetch('http://127.0.0.1:8003/api/wishlist/add', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        touristId: touristId,
+                        destinations: [id]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create wishlist');
+                }
+                toast.success(`${name} added to your Dream List!`);
+            }
+            else {
                 throw new Error('Failed to get the wishlist');
             }
 
             onAddToItinerary(id);
         } catch (error) {
             console.error('Error adding to wishlist:', error);
+            toast.error(`Failed to add ${name} to Dream List`);
         } finally {
             setIsAdding(false);
         }

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { FiPlus, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import toast from 'react-hot-toast';
 import AddEditGuideModal from '@/app/admin/components/add_edit_tour_guide_model';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export type TourGuide = {
     id: number;
@@ -18,6 +20,14 @@ export type TourGuide = {
     profilePicture: string | null;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
 export default function TourGuidesPage() {
     const [tourGuides, setTourGuides] = useState<TourGuide[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,10 +36,21 @@ export default function TourGuidesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedGuide, setSelectedGuide] = useState<TourGuide | null>(null);
+    const [accessToken, setAccessToken] = useState();
 
     const itemsPerPage = 8;
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+
         fetchTourGuides();
     }, []);
 
@@ -96,9 +117,14 @@ export default function TourGuidesPage() {
         }
 
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(payload),
             });
             if (!response.ok) {

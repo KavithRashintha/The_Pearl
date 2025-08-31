@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Toaster } from 'react-hot-toast'
-
+import { Toaster } from 'react-hot-toast';
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 import Step1_SelectDestinations from '@/app/tourist/components/trip_step1';
 import Step2_FillInformation from '@/app/tourist/components/trip_step2';
 import Step3_SelectGuide from '@/app/tourist/components/trip_step3';
 import Step4_ConfirmTrip from '@/app/tourist/components/trip_step4';
 import Step5_Success from '@/app/tourist/components/trip_step5';
+import WandyChat from '@/app/tourist/components/wandy_chat';
 
 export type TourGuide = {
     id: number;
@@ -19,7 +21,6 @@ export type TourGuide = {
     tripsCompleted: number;
     rating: number;
 };
-
 
 export type TripFormData = {
     destinations: { id: number; name: string }[];
@@ -32,12 +33,21 @@ export type TripFormData = {
     numChildren: number;
     startDate: string;
     numDays: number;
+    tripPayment: number;
     selectedGuide: TourGuide | null;
+};
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
 };
 
 export default function PlanTripPage() {
     const [currentStep, setCurrentStep] = useState(1);
-
+    const [isChatOpen, setIsChatOpen] = useState(false);
     const [formData, setFormData] = useState<TripFormData>({
         destinations: [],
         email: '',
@@ -49,6 +59,7 @@ export default function PlanTripPage() {
         numChildren: 0,
         startDate: '',
         numDays: 1,
+        tripPayment: 0,
         selectedGuide: null,
     });
 
@@ -58,7 +69,7 @@ export default function PlanTripPage() {
     const renderStep = () => {
         switch (currentStep) {
             case 1:
-                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} />;
+                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} openChat={() => setIsChatOpen(true)} />;
             case 2:
                 return <Step2_FillInformation nextStep={nextStep} prevStep={prevStep} formData={formData} setFormData={setFormData} />;
             case 3:
@@ -68,15 +79,13 @@ export default function PlanTripPage() {
             case 5:
                 return <Step5_Success />;
             default:
-                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} />;
+                return <Step1_SelectDestinations nextStep={nextStep} setFormData={setFormData} openChat={() => setIsChatOpen(true)} />;
         }
     };
 
     return (
         <div className="min-h-screen">
-
             <Toaster position="top-center" />
-
             <section className="relative h-[40vh] w-full overflow-hidden">
                 <div className="relative inset-0 w-full h-full">
                     <Image
@@ -104,6 +113,9 @@ export default function PlanTripPage() {
             <div className="container mx-auto px-4 md:px-16 py-8 md:py-12">
                 {renderStep()}
             </div>
+
+            {isChatOpen && <WandyChat onClose={() => setIsChatOpen(false)} />}
         </div>
     );
 }
+

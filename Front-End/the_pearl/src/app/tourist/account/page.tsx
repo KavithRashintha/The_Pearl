@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FiMessageSquare, FiSave, FiXCircle } from 'react-icons/fi';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
 
 type TouristProfile = {
     name: string;
@@ -81,13 +91,31 @@ export default function MyAccountPage() {
     const [trips, setTrips] = useState<Trip[]>([]);
     const [tripsLoading, setTripsLoading] = useState(true);
     const [tripsError, setTripsError] = useState<string | null>(null);
-
-    const touristId = 1;
+    const [touristId, setTouristId] = useState<number | null>(null);
+    const [accessToken, setAccessToken] = useState<string | undefined>();
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTouristId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (touristId == null) {
+            setLoading(false);
+            setTripsLoading(false);
+            return;
+        }
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8003/api/tourists${touristId}/profile`);
+                const response = await fetch(`http://127.0.0.1:8003/api/tourists/${touristId}/profile`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch profile data.');
                 }
@@ -160,19 +188,23 @@ export default function MyAccountPage() {
         };
 
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+
             const response = await fetch(`http://127.0.0.1:8003/api/tourists/${touristId}/profile`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'PATCH',
+                headers: headers,
                 body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
                 throw new Error('Failed to update profile. Please try again.');
             }
-
+            toast.success('Profile updated successfully!');
             setProfile(editableProfile);
             setIsEditing(false);
-            toast.success('Profile updated successfully!');
 
         } catch (error: any) {
             toast.error(error.message);

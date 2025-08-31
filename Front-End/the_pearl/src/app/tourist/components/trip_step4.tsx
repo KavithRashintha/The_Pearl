@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { TripFormData } from '@/app/tourist/trips/page';
 import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 type StepProps = {
     nextStep: () => void;
     prevStep: () => void;
     formData: TripFormData;
+};
+
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
 };
 
 const DetailItem = ({ label, value }: { label: string, value: string | number | undefined | null }) => (
@@ -17,6 +27,21 @@ const DetailItem = ({ label, value }: { label: string, value: string | number | 
 
 export default function Step4_ConfirmTrip({ nextStep, prevStep, formData }: StepProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [touristId, setTouristId] = useState<number | null>(null);
+    const [accessToken, setAccessToken] = useState();
+
+    useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTouristId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
 
     const handleConfirm = async () => {
         if (!formData.selectedGuide) {
@@ -25,7 +50,7 @@ export default function Step4_ConfirmTrip({ nextStep, prevStep, formData }: Step
         }
         setIsSubmitting(true);
         const payload = {
-            touristId: 1,
+            touristId: touristId,
             touristPassportNumber: formData.passportNumber,
             touristCountry: formData.country,
             tourGuideId: formData.selectedGuide.id,
@@ -35,13 +60,18 @@ export default function Step4_ConfirmTrip({ nextStep, prevStep, formData }: Step
             startDate: formData.startDate,
             numberOfDays: Number(formData.numDays),
             tripStatus: "Pending",
-            tripPayment: 0,
+            tripPayment: formData.tripPayment,
             paymentStatus: "Pending"
         };
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+
             const response = await fetch('http://127.0.0.1:8003/api/trips/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(payload),
             });
             if (!response.ok) {
@@ -74,9 +104,10 @@ export default function Step4_ConfirmTrip({ nextStep, prevStep, formData }: Step
                     <DetailItem label="Number Of Children" value={formData.numChildren} />
                     <DetailItem label="Starting Date" value={formData.startDate} />
                     <DetailItem label="Number Of Days" value={formData.numDays} />
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                         <DetailItem label="Address" value={formData.address} />
                     </div>
+                    <DetailItem label="Budget" value={formData.tripPayment} />
                 </div>
                 <div className="pt-6 border-t">
                     <h3 className="text-lg font-semibold text-gray-800">Selected Destinations</h3>

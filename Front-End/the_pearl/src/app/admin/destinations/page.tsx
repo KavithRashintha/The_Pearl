@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { FiPlus, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import toast from 'react-hot-toast';
 import AddEditDestinationModal from '@/app/admin/components/add_edit_destination_model';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export type Destination = {
     id: number;
@@ -17,6 +19,15 @@ export type Destination = {
     image: string;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
+
 export default function DestinationsPage() {
     const [destinations, setDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,10 +36,20 @@ export default function DestinationsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+    const [accessToken, setAccessToken] = useState()
 
     const itemsPerPage = 8;
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
         fetchDestinations();
     }, []);
 
@@ -71,9 +92,14 @@ export default function DestinationsPage() {
         const method = modalMode === 'add' ? 'POST' : 'PATCH';
 
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            };
+
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(formData),
             });
             if (!response.ok) {

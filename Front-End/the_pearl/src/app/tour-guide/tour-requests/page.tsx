@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import RequestCard from '@/app/tour-guide/components/request_card';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export type TourRequest = {
     id: number;
@@ -16,15 +18,39 @@ export type TourRequest = {
     tripPayment: number;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
 export default function TourRequestsPage() {
     const [requests, setRequests] = useState<TourRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedRequestId, setExpandedRequestId] = useState<number | null>(null);
-
-    const tourGuideId = 1;
+    const [accessToken, setAccessToken] = useState()
+    const [tourGuideId, setTourGuideId] = useState<number | null>(null);
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTourGuideId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (tourGuideId == null){
+            return;
+        }
         const fetchRequests = async () => {
             try {
                 const response = await fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/pending`);
@@ -47,10 +73,16 @@ export default function TourRequestsPage() {
     };
 
     const updateTripStatus = async (tripId: number, status: 'Accepted' | 'Rejected') => {
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        };
+
         try {
             const response = await fetch(`http://localhost:8003/api/trips/${tripId}/update-trip-status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ tripStatus: status }),
             });
 

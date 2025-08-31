@@ -13,7 +13,7 @@ class AdminCreate(AdminBase):
 
 class Admin(AdminBase):
     id: int
-    user_id: int
+    userId: int
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -32,7 +32,6 @@ export default function Home(){
                 </div>
             </div>
 
-            {/* Explore the beauty section */}
             <div className="w-full bg-white pt-8 pb-18 px-10">
                 <div className="flex flex-col justify-center items-center px-4">
                     <h1 className="font-semibold text-4xl text-royal-purple mb-6 mb-20">Explore The Beauty</h1>

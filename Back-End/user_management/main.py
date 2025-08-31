@@ -73,7 +73,7 @@ def login_for_access_token(
         )
 
     access_token = authService.create_access_token(
-        data={"sub": user.email, "role": user.role, "userId": user.id}
+        data={"sub": user.email, "role": user.role, "userId": user.id, "userName": user.name}
     )
 
     return {"access_token": access_token, "token_type": "bearer"}

@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import CompletedTripCard from '@/app/tour-guide/components/completed_card';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 export type CompletedTrip = {
     id: number;
@@ -15,14 +18,39 @@ export type CompletedTrip = {
     touristCountry: string;
 };
 
+type DecodedToken = {
+    sub: string;
+    role: string;
+    userId: number;
+    userName: string;
+    exp: number;
+};
+
 export default function CompletedToursPage() {
     const [completedTrips, setCompletedTrips] = useState<CompletedTrip[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const tourGuideId = 1;
+    const [accessToken, setAccessToken] = useState()
+    const [tourGuideId, setTourGuideId] = useState<number | null>(null);
 
     useEffect(() => {
+        const token = Cookies.get('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode<DecodedToken>(token);
+                setAccessToken(token);
+                setTourGuideId(decoded.userId);
+            } catch (e) {
+                console.error('Invalid token');
+            }
+        }
+    }, []);
+
+
+    useEffect(() => {
+        if (tourGuideId == null) {
+            return;
+        }
         const fetchCompletedTrips = async () => {
             try {
                 const response = await fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/completed`);
@@ -32,7 +60,7 @@ export default function CompletedToursPage() {
                 const data = await response.json();
                 const formattedData = data.map((trip: any) => ({
                     ...trip,
-                    touristName: trip.touristName || 'Peter Maxwell',
+                    touristName: trip.touristName,
                 }));
                 setCompletedTrips(formattedData);
             } catch (err: any) {
