@@ -21,7 +21,7 @@ export default function SignUpPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const defaultProfilePicture = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/HarryStylesWembley170623_%2865_of_93%29_%2852982678051%29_%28cropped_2%29.jpg/500px-HarryStylesWembley170623_%2865_of_93%29_%2852982678051%29_%28cropped_2%29.jpg";
+    const defaultProfilePicture = "https://pearl-app-user-images.s3.eu-north-1.amazonaws.com/profile-pictures/22b61ae7-f155-44f8-b820-1f71420e1fa9-blank-profile-picture-973460_12801.png";
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();

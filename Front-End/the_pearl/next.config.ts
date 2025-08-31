@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
             'upload.wikimedia.org',
             'www.tourism.cp.gov.lk',
         ],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'pearl-app-user-images.s3.eu-north-1.amazonaws.com',
+                port: '',
+                pathname: '/**',
+            },
+        ],
     },
 };
 

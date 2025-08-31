@@ -3,8 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.middleware.cors import CORSMiddleware
 from schemas import proxySchema
-from services import proxyService, firebaseAuth
-from services.firebase_setup import initialize_firebase
+from services import proxyService, awsService
 from typing import List, Optional
 
 app = FastAPI(title="API Gateway BFF")
@@ -156,6 +155,8 @@ async def delete_tour_guide(user_id: int):
 @app.get("/api/dashboard/counts", response_model=dict, tags=["Dashboard"])
 async def get_dashboard_counts():
     return await proxyService.get_dashboard_counts()
+
+app.include_router(awsService.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8003)

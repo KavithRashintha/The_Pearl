@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiUploadCloud } from 'react-icons/fi';
 import { Destination } from '@/app/admin/destinations/page';
+import Image from 'next/image';
+import { toast } from 'react-toastify'; // NEW: For better feedback
 
 type ModalProps = {
     isOpen: boolean;
@@ -36,6 +38,8 @@ const defaultFormState: FormState = {
 export default function AddEditDestinationModal({ isOpen, onClose, onSubmit, mode, initialData }: ModalProps) {
     const [formData, setFormData] = useState<FormState>(defaultFormState);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     useEffect(() => {
         if (mode === 'edit' && initialData) {
@@ -49,14 +53,26 @@ export default function AddEditDestinationModal({ isOpen, onClose, onSubmit, mod
                 climate: initialData.climate,
                 image: initialData.image,
             });
+            setImagePreview(initialData.image);
+            setImageFile(null);
         } else {
             setFormData(defaultFormState);
+            setImagePreview(null);
+            setImageFile(null);
         }
     }, [isOpen, mode, initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
     };
 
     const handleCheckboxChange = (activity: string) => {
@@ -72,9 +88,43 @@ export default function AddEditDestinationModal({ isOpen, onClose, onSubmit, mod
         e.preventDefault();
         setIsSubmitting(true);
 
+        let finalImageUrl = formData.image;
+
+        if (imageFile) {
+            try {
+                const presignResponse = await fetch('http://localhost:8003/api/v1/s3/generate-upload-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_name: imageFile.name,
+                        file_type: imageFile.type,
+                    }),
+                });
+
+                if (!presignResponse.ok) throw new Error('Failed to get upload URL.');
+                const { uploadUrl, publicUrl } = await presignResponse.json();
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': imageFile.type },
+                    body: imageFile,
+                });
+
+                if (!uploadResponse.ok) throw new Error('Image upload to S3 failed.');
+
+                finalImageUrl = publicUrl;
+
+            } catch (error: any) {
+                toast.error(error.message);
+                setIsSubmitting(false);
+                return;
+            }
+        }
+
         const submissionData = {
             ...formData,
-            details: formData.details.split('\n').filter(paragraph => paragraph.trim() !== ''),
+            image: finalImageUrl,
+            details: formData.details.split('\n').filter(p => p.trim() !== ''),
         };
 
         await onSubmit(submissionData);
@@ -94,6 +144,7 @@ export default function AddEditDestinationModal({ isOpen, onClose, onSubmit, mod
                         <FiX size={24} />
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                         <div>
@@ -111,6 +162,23 @@ export default function AddEditDestinationModal({ isOpen, onClose, onSubmit, mod
                     <div className="mb-4">
                         <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Destination Information</label>
                         <textarea name="details" id="details" value={formData.details} onChange={handleChange} rows={5} className="w-full p-2 border border-gray-300 rounded-md" required />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Destination Image</label>
+                        <div className="mt-2 flex items-center gap-4">
+                            {imagePreview && (
+                                <div className="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                    <Image src={imagePreview} alt="Image Preview" layout="fill" objectFit="cover" />
+                                </div>
+                            )}
+                            <label htmlFor="image-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-violet-600 hover:text-violet-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-violet-500 border border-gray-300 p-2 text-center w-full">
+                                <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-violet-400">
+                                    <FiUploadCloud className="w-8 h-8 text-gray-400" />
+                                    <span className="mt-2 block text-sm">Click to upload an image</span>
+                                    <input id="image-upload" name="image-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} />
+                                </div>
+                            </label>
+                        </div>
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Activities</label>

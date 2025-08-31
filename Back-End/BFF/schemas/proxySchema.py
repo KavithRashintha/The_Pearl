@@ -99,14 +99,14 @@ class TourGuideRegistration(BaseModel):
     address: str
     licenseNumber: str
     reviewCount: int
-    profilePicture: Optional[str] = None
+    profilePicture: Optional[str] = "https://pearl-app-user-images.s3.eu-north-1.amazonaws.com/profile-pictures/22b61ae7-f155-44f8-b820-1f71420e1fa9-blank-profile-picture-973460_12801.png"
 
 class AdminRegistration(BaseModel):
     name: str
     email: EmailStr
     password: str
     role: str = "admin"
-    profilePicture: Optional[str] = None
+    profilePicture: Optional[str] = "https://pearl-app-user-images.s3.eu-north-1.amazonaws.com/profile-pictures/22b61ae7-f155-44f8-b820-1f71420e1fa9-blank-profile-picture-973460_12801.png"
 
 class TouristProfileUpdate(BaseModel):
     name: Optional[str] = None

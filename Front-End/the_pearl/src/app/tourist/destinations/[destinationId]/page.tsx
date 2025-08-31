@@ -30,7 +30,8 @@ type DecodedToken = {
 async function getDestination(id: number): Promise<Destination | null> {
     try {
         const res = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${id}`, {
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 },
+            cache: 'no-store'
         });
 
         if (!res.ok) {
