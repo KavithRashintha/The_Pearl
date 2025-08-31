@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FiEdit, FiSave, FiXCircle } from 'react-icons/fi';
+import { FiEdit, FiSave, FiXCircle, FiCamera } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -62,8 +62,12 @@ export default function TourGuideProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
     const [tourGuideId, setTourGuideId] = useState<number | null>(null);
-    const [accessToken, setAccessToken] = useState()
+    const [accessToken, setAccessToken] = useState<string | undefined>();
 
     useEffect(() => {
         const token = Cookies.get('accessToken');
@@ -78,9 +82,9 @@ export default function TourGuideProfilePage() {
         }
     }, []);
 
-
     useEffect(() => {
         if (tourGuideId == null) {
+            setLoading(false);
             return;
         }
         const fetchProfile = async () => {
@@ -109,6 +113,8 @@ export default function TourGuideProfilePage() {
 
     const handleCancel = () => {
         setIsEditing(false);
+        setImageFile(null);
+        setImagePreview(null);
     };
 
     const handleSave = async () => {
@@ -131,10 +137,36 @@ export default function TourGuideProfilePage() {
         }
 
         setIsSaving(true);
+        let finalImageUrl = editableProfile.profilePicture;
+
+        if (imageFile) {
+            try {
+                const presignResponse = await fetch('http://127.0.0.1:8003/api/v1/s3/generate-upload-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_name: imageFile.name, file_type: imageFile.type }),
+                });
+                if (!presignResponse.ok) throw new Error('Could not get upload URL.');
+                const { uploadUrl, publicUrl } = await presignResponse.json();
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': imageFile.type },
+                    body: imageFile,
+                });
+                if (!uploadResponse.ok) throw new Error('Image upload failed.');
+                finalImageUrl = publicUrl;
+            } catch (error: any) {
+                toast.error(error.message);
+                setIsSaving(false);
+                return;
+            }
+        }
 
         const payload = {
             name: editableProfile.name,
             email: editableProfile.email,
+            profilePicture: finalImageUrl,
             telephone: editableProfile.tour_guide.telephone,
             address: editableProfile.tour_guide.address,
             nic: editableProfile.tour_guide.nic,
@@ -142,7 +174,6 @@ export default function TourGuideProfilePage() {
         };
 
         try {
-
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
@@ -159,10 +190,12 @@ export default function TourGuideProfilePage() {
                 throw new Error(errorData.detail || 'Failed to update profile.');
             }
 
+            const updatedProfile = await response.json();
             toast.success('Profile updated successfully!');
-            setProfile(editableProfile);
+            setProfile(updatedProfile);
             setIsEditing(false);
-
+            setImageFile(null);
+            setImagePreview(null);
 
         } catch (error: any) {
             toast.error(error.message);
@@ -185,6 +218,14 @@ export default function TourGuideProfilePage() {
         }
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     if (loading) {
         return <main className="p-8 md:p-12">Loading profile...</main>;
     }
@@ -197,20 +238,29 @@ export default function TourGuideProfilePage() {
         return <main className="p-8 md:p-12">Could not load profile data.</main>;
     }
 
+    const profileImageUrl = imagePreview || profile.profilePicture || "/images/profile-placeholder.jpg";
+
     return (
         <main className="p-8 md:p-12 bg-white flex-1 pl-8">
             <section className="flex items-center gap-6 mb-12 mt-12 pl-8">
-                <div className="relative w-48 h-48 rounded-full overflow-hidden">
+                <div className="relative w-48 h-48 rounded-full overflow-hidden group">
                     <Image
-                        src={profile.profilePicture || "/images/profile-placeholder.jpg"}
+                        src={profileImageUrl}
                         alt="Tour Guide Profile Picture"
                         layout="fill"
                         objectFit="cover"
                         priority
+                        key={profileImageUrl}
                     />
+                    {isEditing && (
+                        <label htmlFor="profile-picture-upload" className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                            <FiCamera size={40} />
+                            <input id="profile-picture-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
+                        </label>
+                    )}
                 </div>
-                <div className = "flex-col ml-8">
-                    <div className = 'mb-4'>
+                <div className="flex-col ml-8">
+                    <div className='mb-4'>
                         {isEditing ? (
                             <input
                                 type="text" name="name" value={editableProfile.name} onChange={handleChange}
@@ -218,7 +268,7 @@ export default function TourGuideProfilePage() {
                             />
                         ) : (
                             <h1 className="text-5xl font-bold text-gray-800 tracking-wider">
-                                <span className="text-violet-600">{profile.name} - <span className= "font-semibold">{profile.tour_guide.address.split(',')[0]}</span></span>
+                                <span className="text-violet-600">{profile.name} - <span className="font-semibold">{profile.tour_guide.address.split(',')[0]}</span></span>
                             </h1>
                         )}
                     </div>
