@@ -13,7 +13,7 @@ type RequestCardProps = {
 
 export default function RequestCard({ request, isExpanded, isAcceptDisabled, onToggleExpand, onAccept, onReject }: RequestCardProps) {
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 transition-all duration-300">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 transition-all duration-300 text-gray-600 pt-8">
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 <div><strong>Person -</strong> {request.touristName}</div>
                 <div><strong>From -</strong> {request.touristCountry}</div>
@@ -29,16 +29,15 @@ export default function RequestCard({ request, isExpanded, isAcceptDisabled, onT
             </div>
 
             {isExpanded && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="mt-6 pt-8 border-t border-gray-200 text-gray-600">
                     <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-6">
                         <div><strong>Number Of Adults -</strong> {request.numberOfAdults} Adults</div>
                         <div><strong>Number Of Children -</strong> {request.numberOfChildren} Children</div>
                         <div><strong>Tourist Email -</strong> {request.touristEmail || 'N/A'}</div>
-                        <div><strong>Tourist Contact -</strong> {request.touristPhone || 'N/A'}</div>
                     </div>
 
                     <div>
-                        <h3 className="text-lg font-semibold text-violet-600 mb-2">Destinations</h3>
+                        <h3 className="text-lg font-semibold text-violet-600 mb-4 mt-2">Destinations</h3>
                         <ul className="list-disc list-inside grid grid-cols-3 gap-2 text-gray-600">
                             {request.destinations.map(dest => <li key={dest}>{dest}</li>)}
                         </ul>

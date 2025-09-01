@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AcceptedTripCard from '@/app/tour-guide/components/accepted_card';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 
@@ -17,9 +17,11 @@ export type AcceptedTrip = {
     tripPayment: number;
     tripStatus: string;
     paymentStatus: string;
+    touristId: number;
     touristName: string;
     touristCountry: string;
     touristPassportNumber: string;
+    touristEmail?: string;
 };
 
 type DecodedToken = {
@@ -35,7 +37,7 @@ export default function ActiveToursPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedTripId, setExpandedTripId] = useState<number | null>(null);
-    const [accessToken, setAccessToken] = useState();
+    const [accessToken, setAccessToken] = useState<string | undefined>();
     const [tourGuideId, setTourGuideId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -52,14 +54,13 @@ export default function ActiveToursPage() {
     }, []);
 
     useEffect(() => {
-        if (tourGuideId == null) {
-            return;
-        }
         const fetchActiveTrips = async () => {
+            if (!tourGuideId) return;
             try {
+                const headers = { Authorization: `Bearer ${accessToken}` };
                 const [acceptedResponse, startedResponse] = await Promise.all([
-                    fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/accepted`),
-                    fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/started`)
+                    fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/accepted`, { headers }),
+                    fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/started`, { headers })
                 ]);
 
                 if (!acceptedResponse.ok || !startedResponse.ok) {
@@ -68,8 +69,21 @@ export default function ActiveToursPage() {
 
                 const acceptedData: AcceptedTrip[] = await acceptedResponse.json();
                 const startedData: AcceptedTrip[] = await startedResponse.json();
+                const allTrips = [...acceptedData, ...startedData];
 
-                setActiveTrips([...acceptedData, ...startedData]);
+                const touristIds = [...new Set(allTrips.map(trip => trip.touristId))];
+                const touristPromises = touristIds.map(id =>
+                    fetch(`http://localhost:8003/api/tourists/${id}/profile`, { headers }).then(res => res.ok ? res.json() : null)
+                );
+                const tourists = (await Promise.all(touristPromises)).filter(Boolean);
+                const touristMap = new Map(tourists.map(t => [t.id, t.email]));
+
+                const enrichedTrips = allTrips.map(trip => ({
+                    ...trip,
+                    touristEmail: touristMap.get(trip.touristId)
+                }));
+
+                setActiveTrips(enrichedTrips);
             } catch (err: any) {
                 setError(err.message);
             } finally {
@@ -77,20 +91,15 @@ export default function ActiveToursPage() {
             }
         };
         fetchActiveTrips();
-    }, [tourGuideId]);
+    }, [tourGuideId, accessToken]);
 
     const handleToggleExpand = (tripId: number) => {
         setExpandedTripId(prevId => (prevId === tripId ? null : tripId));
     };
 
     const handleStatusUpdate = async (tripId: number, newStatus: string) => {
-
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-        };
-
         try {
+            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` };
             const response = await fetch(`http://localhost:8003/api/trips/${tripId}/update-trip-status`, {
                 method: 'PATCH',
                 headers: headers,
@@ -111,13 +120,8 @@ export default function ActiveToursPage() {
     };
 
     const handlePaymentStatusUpdate = async (tripId: number, newStatus: string) => {
-
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-        };
-
         try {
+            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` };
             const response = await fetch(`http://localhost:8003/api/trips/${tripId}/update-payment-status`, {
                 method: 'PATCH',
                 headers: headers,
@@ -169,8 +173,8 @@ export default function ActiveToursPage() {
 
     return (
         <main className="p-8 md:p-12 bg-white flex-1">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Active Trips</h1>
-            <hr className="border-violet-300 border-t-2 w-24 mb-10" />
+            <h1 className="text-4xl font-bold text-royal-purple mb-2">Active Trips</h1>
+            <hr className="border-violet-700 border-t-2 w-full mb-10 mt-4" />
 
             {renderContent()}
         </main>

@@ -209,8 +209,8 @@ export default function TourRequestsPage() {
 
     return (
         <main className="p-8 md:p-12 bg-white flex-1">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Tour Requests</h1>
-            <hr className="border-violet-300 border-t-2 w-24 mb-10" />
+            <h1 className="text-4xl font-bold text-royal-purple mb-2">Tour Requests</h1>
+            <hr className="border-violet-700 border-t-2 w-full mb-10 mt-4" />
 
             {hasActiveTrip && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
