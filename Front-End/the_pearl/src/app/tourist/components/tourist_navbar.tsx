@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from "next/image";
+import Cookies from 'js-cookie';
 
 export default function TouristNavBar() {
     const pathname = usePathname();
+    const router = useRouter();
 
     const navItems = [
         { label: 'Home', href: '/tourist/home' },
@@ -14,6 +16,11 @@ export default function TouristNavBar() {
         { label: 'About Us', href: '/tourist/about-us' },
         { label: 'Account', href: '/tourist/account' },
     ];
+
+    const handleLogout = () => {
+        Cookies.remove('accessToken');
+        router.refresh();
+    };
 
     return (
         <nav className="bg-purple-100 py-2">
@@ -27,7 +34,7 @@ export default function TouristNavBar() {
                         quality={100}
                     />
                 </Link>
-                <div className="flex space-x-14 text-sm">
+                <div className="flex items-center space-x-14 text-sm">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
@@ -41,6 +48,12 @@ export default function TouristNavBar() {
                             {item.label}
                         </Link>
                     ))}
+                    <button
+                        onClick={handleLogout}
+                        className="font-medium text-purple-500 hover:text-purple-600 bg-transparent border-none p-0 cursor-pointer"
+                    >
+                        Logout
+                    </button>
                 </div>
             </div>
         </nav>

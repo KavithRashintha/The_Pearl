@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
     return (
         <div>
             <h1 className="text-4xl font-bold text-violet-600 mb-2">Welcome</h1>
-            <hr className="border-violet-300 border-t-2 w-24 mb-10" />
+            <hr className="border-violet-700 border-t-2 w-full mb-10 mt-4" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <StatCard title="Total Destinations" value={String(counts?.total_destinations || 0)} icon={<FiMap />} />

@@ -92,6 +92,7 @@ def has_active_trip_for_tourist(db: Session, tourist_id: int) -> bool:
     active_trip = db.query(Trip).filter(
         Trip.touristId == tourist_id,
         or_(
+            Trip.tripStatus == "Pending",
             Trip.tripStatus == "Accepted",
             Trip.tripStatus == "Started"
         )

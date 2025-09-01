@@ -21,6 +21,8 @@ const getStatusClasses = (status: string) => {
             return 'bg-green-100 text-green-800';
         case 'started':
             return 'bg-blue-100 text-blue-800';
+        case 'pending':
+            return 'bg-yellow-100 text-yellow-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
@@ -35,7 +37,7 @@ export default function ActiveTripCard({ trip, isExpanded, onToggleExpand }: Tri
                 </p>
                 <div className="flex items-center gap-2">
                     <span className="font-medium text-gray-700">Status:</span>
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClasses(trip.tripStatus)}`}>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusClasses(trip.tripStatus)}`}>
                         {trip.tripStatus}
                     </span>
                 </div>
@@ -54,6 +56,7 @@ export default function ActiveTripCard({ trip, isExpanded, onToggleExpand }: Tri
                         <div><strong>Adults:</strong> {trip.numberOfAdults}</div>
                         <div><strong>Children:</strong> {trip.numberOfChildren}</div>
                         <div className="col-span-2"><strong>Payment Status:</strong> {trip.paymentStatus}</div>
+                        {trip.tourGuideName && <div className="col-span-2"><strong>Tour Guide:</strong> {trip.tourGuideName}</div>}
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold text-violet-600 border-b-2 border-violet-200 pb-1 mb-3">
@@ -68,8 +71,11 @@ export default function ActiveTripCard({ trip, isExpanded, onToggleExpand }: Tri
                             ))}
                         </div>
 
-                        <div className = "mt-2">
-                            <h5>Your trip has active now, please stay connected with the tour guide.</h5>
+                        <div className = "mt-4 text-sm text-gray-600">
+                            {trip.tripStatus.toLowerCase() === 'pending'
+                                ? <p>Your trip request is pending approval from a tour guide.</p>
+                                : <p>Your trip is active now, please stay connected with your tour guide.</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -77,4 +83,3 @@ export default function ActiveTripCard({ trip, isExpanded, onToggleExpand }: Tri
         </div>
     );
 }
-

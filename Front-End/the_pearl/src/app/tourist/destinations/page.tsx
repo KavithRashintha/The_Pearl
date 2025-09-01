@@ -85,40 +85,6 @@ export default function Destination() {
             </section>
 
             <div className="container mx-auto px-16 py-12">
-                <div className="flex flex-wrap gap-4 mb-8">
-                    <select
-                        name="type"
-                        value={filters.type}
-                        onChange={handleFilterChange}
-                        className="px-4 py-2 pr-8 rounded-lg border border-gray-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93biI+PHBhdGggZD0ibTYgOSA2IDYgNi02Ii8+PC9zdmc+')] bg-no-repeat bg-[right_0.5rem_center]"
-                    >
-                        <option value="">Destination Type</option>
-                        <option value="Historical">Historical</option>
-                        <option value="Beach">Beach</option>
-                    </select>
-
-                    <select
-                        name="province"
-                        value={filters.province}
-                        onChange={handleFilterChange}
-                        className="px-4 py-2 pr-8 rounded-lg border border-gray-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93biI+PHBhdGggZD0ibTYgOSA2IDYgNi02Ii8+PC9zdmc+')] bg-no-repeat bg-[right_0.5rem_center]"
-                    >
-                        <option value="">Province</option>
-                        <option value="Central">Central</option>
-                        <option value="Southern">Southern</option>
-                    </select>
-
-                    <select
-                        name="activity"
-                        value={filters.activity}
-                        onChange={handleFilterChange}
-                        className="px-4 py-2 pr-8 rounded-lg border border-gray-300 appearance-none bg-white bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93biI+PHBhdGggZD0ibTYgOSA2IDYgNi02Ii8+PC9zdmc+')] bg-no-repeat bg-[right_0.5rem_center]"
-                    >
-                        <option value="">Activities</option>
-                        <option value="Attraction">Attraction</option>
-                        <option value="Hiking">Hiking</option>
-                    </select>
-                </div>
 
                 {loading ? (
                     <div className="flex justify-center py-12">

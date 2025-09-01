@@ -1,8 +1,9 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import Image from 'next/image';
+import Cookies from "js-cookie";
 
 const navLinks = [
     { name: 'Dashboard', href: '/admin/dashboard' },
@@ -13,6 +14,12 @@ const navLinks = [
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleLogout = () => {
+        Cookies.remove('accessToken');
+        router.push('/login');
+    };
 
     return (
         <aside className="w-64 h-screen bg-violet-50 p-8 flex flex-col fixed">
@@ -45,7 +52,10 @@ export default function AdminSidebar() {
                         </Link>
                     );
                 })}
-                <button className="w-full px-4 py-2 text-center rounded-lg text-gray-700 hover:bg-violet-200 font-medium transition-colors">
+                <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 text-center rounded-lg text-gray-700 hover:bg-violet-200 font-medium transition-colors"
+                >
                     Logout
                 </button>
             </nav>
