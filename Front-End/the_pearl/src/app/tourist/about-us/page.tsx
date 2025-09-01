@@ -5,7 +5,6 @@ import Image from 'next/image';
 export default function AboutUs() {
     return (
         <div>
-            {/* Hero Section */}
             <section className="relative h-[46vh] w-full overflow-hidden">
                 <div className="relative inset-0 w-full h-full">
                     <Image
@@ -50,7 +49,6 @@ export default function AboutUs() {
                             At The Pearl, we believe that travel is more than just visiting destinations—it's about connecting with the soul of a place and creating stories that stay with you forever. That's why we go beyond simply offering guidance. We curate experiences that allow you to immerse yourself in Sri Lanka's vibrant culture, taste its exotic flavors, and witness its timeless traditions.
                             Whether it's exploring ancient ruins, trekking through lush rainforests, or experiencing the warmth of Sri Lankan hospitality, we ensure every moment of your journey is meaningful and unforgettable. Our vision is to redefine the way travelers experience Sri Lanka by combining convenience, authenticity, and expert support. With The Pearl by your side, you're not just a tourist—you're an explorer, adventurer, and storyteller discovering the hidden treasures of this extraordinary island.
                         </p>
-
 
                     </div>
                 </div>

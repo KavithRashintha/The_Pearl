@@ -9,7 +9,7 @@ const navLinks = [
     { name: 'My Profile', href: '/tour-guide/account' },
     { name: 'Requests', href: '/tour-guide/tour-requests' },
     { name: 'Active Tours', href: '/tour-guide/active-tours' },
-    { name: 'Chats', href: '/tour-guide/chats' },
+    { name: 'Chats', href: '/tour-guide/chat' },
     { name: 'Completed Tours', href: '/tour-guide/completed-tours' },
 ];
 

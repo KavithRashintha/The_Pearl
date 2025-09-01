@@ -1,4 +1,4 @@
-import TourGuideSideBar from "@/app/tour-guide/components/tour_guide_navbar"
+import TourGuideSideBar from "@/app/tour-guide/(components)/tour_guide_navbar"
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 

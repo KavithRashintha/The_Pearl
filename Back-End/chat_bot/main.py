@@ -1,4 +1,3 @@
-# main.py - Fully Updated
 import os
 import uvicorn
 from dotenv import load_dotenv
@@ -6,7 +5,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
-# LangChain imports
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
@@ -48,7 +46,6 @@ class Query(BaseModel):
 
 @app.post("/chat")
 async def chat(query: Query):
-    # Use the new chain's .invoke method (replaces .run)
     response = await retrieval_chain.ainvoke({"input": query.query})
     return {"answer": response["answer"]}
 
