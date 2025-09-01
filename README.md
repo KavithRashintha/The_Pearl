@@ -91,21 +91,6 @@ Bash
 npm run dev
 Your application should now be running on http://localhost:3000.
 
-📁 Project Structure
-The project uses the Next.js App Router. The main directories are structured by user role:
-
-/app/admin/: Contains all pages and components for the admin dashboard.
-
-/app/tour-guide/: Contains all pages and components for the tour guide dashboard.
-
-/app/tourist/: Contains all pages and components for the tourist-facing application.
-
-/components/: Shared components used across different parts of the application.
-
-/contexts/: Houses the React Context providers, such as the AuthContext.
-
-/middleware.ts: Handles authentication and role-based route protection.
-
 🤝 Contributing
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
