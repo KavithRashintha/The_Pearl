@@ -26,6 +26,9 @@ async def get_trips_by_guide(tourGuideId: int):
 async def get_completed_trips_by_tourist(touristId: int):
     return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tourist/{touristId}/completed")
 
+async def get_accepted_trips_by_tourist(touristId: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/trips/trip-by-tourist/{touristId}/accepted")
+
 async def update_trip_status(tripId: int, status_update: proxySchema.TripStatusUpdate):
     return await handle_request("PATCH", f"{TRIP_SERVICE_URL}/trips/{tripId}/update-trip-status", json=status_update.model_dump())
 
@@ -46,3 +49,9 @@ async def get_completed_trips_by_tour_guide(tour_guide_id: int):
 
 async def get_completed_trips_count():
     return await handle_request("GET", f"{TRIP_SERVICE_URL}/api/trips/count/completed")
+
+async def check_tourist_has_active_trip(tourist_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/api/trips/tourist/{tourist_id}/has-active-trip")
+
+async def check_tour_guide_has_active_trip(tour_guide_id: int):
+    return await handle_request("GET", f"{TRIP_SERVICE_URL}/api/trips/tour-guide/{tour_guide_id}/has-active-trip")

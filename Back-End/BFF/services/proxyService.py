@@ -44,7 +44,13 @@ async def get_completed_trips_for_tour_guide(tour_guide_id: int):
     completed_trips = await tripClient.get_completed_trips_by_tour_guide(tour_guide_id)
     return await _enrich_trips_with_tourist_info(completed_trips)
 
+async def check_tourist_has_active_trip(tourist_id: int): return await tripClient.check_tourist_has_active_trip(tourist_id)
+
+async def check_tour_guide_has_active_trip(tour_guide_id: int): return await tripClient.check_tour_guide_has_active_trip(tour_guide_id)
+
 async def get_completed_trips_by_tourist(touristId: int): return await tripClient.get_completed_trips_by_tourist(touristId)
+
+async def get_accepted_trips_by_tourist(touristId: int): return await tripClient.get_accepted_trips_by_tourist(touristId)
 
 async def update_trip_status(tripId: int, status_update: proxySchema.TripStatusUpdate): return await tripClient.update_trip_status(tripId, status_update)
 

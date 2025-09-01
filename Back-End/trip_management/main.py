@@ -40,6 +40,10 @@ def get_trip_by_tour_guide_id(tourGuideId: int, db: Session = Depends(get_db)):
 def get_completed_trips_for_tourist(touristId: int, db: Session = Depends(get_db)):
     return tripServices.get_completed_trips_by_tourist(db, touristId)
 
+@app.get("/trips/trip-by-tourist/{touristId}/accepted", response_model=list[tripSchemas.Trip])
+def get_accepted_trips_by_tourist(touristId: int, db: Session = Depends(get_db)):
+    return tripServices.get_accepted_trips_by_tourist(db, touristId)
+
 @app.patch('/trips/{tripId}/update-trip-status', response_model=tripSchemas.Trip)
 def update_trip_status(tripId: int, status_update: tripSchemas.TripStatusUpdate, db: Session = Depends(get_db)):
     updated_trip_status = tripServices.update_trip_status(db, tripId, status_update)
@@ -75,6 +79,16 @@ def get_completed_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(g
 @app.get("/api/trips/count/completed", response_model=dict, tags=["Trips"])
 def get_completed_trips_count(db: Session = Depends(get_db)):
     return tripServices.count_completed_trips(db)
+
+@app.get("/api/trips/tourist/{tourist_id}/has-active-trip", response_model=dict, tags=["Trips"])
+def check_tourist_has_active_trip(tourist_id: int, db: Session = Depends(get_db)):
+    has_trip = tripServices.has_active_trip_for_tourist(db, tourist_id)
+    return {"has_active_trip": has_trip}
+
+@app.get("/api/trips/tour-guide/{tour_guide_id}/has-active-trip", response_model=dict, tags=["Trips"])
+def check_tour_guide_has_active_trip(tour_guide_id: int, db: Session = Depends(get_db)):
+    has_trip = tripServices.has_active_trip_for_tour_guide(db, tour_guide_id)
+    return {"has_active_trip": has_trip}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002)

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from schemas import tripSchemas
 from models.tripModels import Trip
+from sqlalchemy import or_
 from typing import List
 
 
@@ -48,7 +49,16 @@ def update_trip_payment_status(db: Session, tripId: int, payment_update: tripSch
 def get_completed_trips_by_tourist(db: Session, tourist_id: int):
     return db.query(Trip).filter(
         Trip.touristId == tourist_id,
-        Trip.tripStatus == "completed"
+        Trip.tripStatus == "Completed"
+    ).all()
+
+def get_accepted_trips_by_tourist(db: Session, tourist_id: int):
+    return db.query(Trip).filter(
+        Trip.touristId == tourist_id,
+        or_(
+            Trip.tripStatus == "Accepted",
+            Trip.tripStatus == "Started"
+        )
     ).all()
 
 def get_pending_trips_by_tour_guide(db: Session, tour_guide_id: int):
@@ -77,3 +87,26 @@ def get_complated_trips_by_tour_guide(db: Session, tour_guide_id: int):
 
 def count_completed_trips(db: Session):
     return db.query(Trip).filter(Trip.tripStatus == "Completed").count()
+
+def has_active_trip_for_tourist(db: Session, tourist_id: int) -> bool:
+    active_trip = db.query(Trip).filter(
+        Trip.touristId == tourist_id,
+        or_(
+            Trip.tripStatus == "Accepted",
+            Trip.tripStatus == "Started"
+        )
+    ).first()
+
+    return active_trip is not None
+
+
+def has_active_trip_for_tour_guide(db: Session, tour_guide_id: int) -> bool:
+    active_trip = db.query(Trip).filter(
+        Trip.tourGuideId == tour_guide_id,
+        or_(
+            Trip.tripStatus == "Accepted",
+            Trip.tripStatus == "Started"
+        )
+    ).first()
+
+    return active_trip is not None
