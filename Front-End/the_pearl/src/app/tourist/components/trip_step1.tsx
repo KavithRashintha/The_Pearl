@@ -296,6 +296,13 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                 </button>
             </div>
 
+            {(hasActiveTrip && activeTrips.length === 0) && (
+                <div className="mb-12 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                    <p className="font-bold">Request Pending</p>
+                    <p>Your trip request is pending approval from a tour guide. You will be notified once it's accepted.</p>
+                </div>
+            )}
+
             {activeTrips.length > 0 && (
                 <div className="mb-12">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Active Trip(s)</h2>

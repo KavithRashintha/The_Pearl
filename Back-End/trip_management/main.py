@@ -78,7 +78,8 @@ def get_completed_trips_for_tour_guide(tourGuideId: int, db: Session = Depends(g
 
 @app.get("/api/trips/count/completed", response_model=dict, tags=["Trips"])
 def get_completed_trips_count(db: Session = Depends(get_db)):
-    return tripServices.count_completed_trips(db)
+    count = tripServices.count_completed_trips(db)
+    return {"completed_trips_count": count}
 
 @app.get("/api/trips/tourist/{tourist_id}/has-active-trip", response_model=dict, tags=["Trips"])
 def check_tourist_has_active_trip(tourist_id: int, db: Session = Depends(get_db)):

@@ -177,7 +177,7 @@ export default function DestinationsPage() {
         <div>
             <div>
                 <h1 className="text-4xl font-bold text-violet-600 mb-2">Destinations</h1>
-                <hr className="border-gray-200 border-t my-4" />
+                <hr className="border-violet-700 border-t-2 w-full mb-10 mt-4" />
                 <div className="flex justify-end">
                     <button onClick={handleOpenAddModal} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors flex items-center gap-2">
                         <FiPlus />
