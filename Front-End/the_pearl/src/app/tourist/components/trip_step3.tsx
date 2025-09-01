@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { TripFormData, TourGuide } from '@/app/tourist/trips/page';
 import { FiMessageSquare } from 'react-icons/fi';
+import { useRouter } from "next/navigation";
+import {router} from "next/client";
 
 type StepProps = {
     nextStep: () => void;
@@ -11,7 +13,6 @@ type StepProps = {
     setFormData: React.Dispatch<React.SetStateAction<TripFormData>>;
 };
 
-// New type that matches the actual API response for a tour guide
 type ApiTourGuide = {
     id: number;
     userId: number;
@@ -101,14 +102,13 @@ export default function Step3_SelectGuide({ nextStep, prevStep, formData, setFor
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <span className="w-60">{guide.address}</span>
                                     <span className="w-40">{guide.telephone}</span>
-                                    <span className="w-24">{guide.reviewCount} Reviews</span>
+                                    <span className="w-24">{guide.email}</span>
                                 </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-16 w-full md:w-auto justify-between">
-                            <StarRating rating={guide.reviewCount}/>
                             <div className="flex items-center gap-6">
-                                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"><FiMessageSquare size={20} /></button>
+                                <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"><FiMessageSquare size={20} onClick={() => router.push("/tourist/chat")}/></button>
                                 <button
                                     onClick={() => handleSelectGuide(guide)}
                                     className={`px-6 py-2 rounded-lg font-medium transition-colors ${formData.selectedGuide?.id === guide.userId ? 'bg-green-500 text-white' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'}`}

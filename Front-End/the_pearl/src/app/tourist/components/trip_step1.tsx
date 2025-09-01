@@ -112,7 +112,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
 
                 if (activeTripStatusResponse.ok) {
                     const hasTrip = await activeTripStatusResponse.json();
-                    setHasActiveTrip(hasTrip);
+                    setHasActiveTrip(hasTrip.has_active_trip);
                 }
 
                 if (acceptedTripsResponse.ok) {
@@ -150,8 +150,8 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
             if (selectedResponse.ok) {
                 const selectedData: SelectedDestinationsItem | null = await selectedResponse.json();
 
-                if(!selectedData || !selectedData.selectedDestinations) {
-                    const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations', {
+                if(!selectedData) {
+                    const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations/add', {
                         method: 'POST',
                         headers: headers,
                         body: JSON.stringify({ touristId: touristId, selectedDestinations: [destinationId] })
