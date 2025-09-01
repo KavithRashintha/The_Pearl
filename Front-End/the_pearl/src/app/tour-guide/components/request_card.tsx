@@ -1,14 +1,17 @@
+"use client";
+
 import { TourRequest } from '@/app/tour-guide/tour-requests/page';
 
 type RequestCardProps = {
     request: TourRequest;
     isExpanded: boolean;
+    isAcceptDisabled: boolean;
     onToggleExpand: (id: number) => void;
     onAccept: (id: number) => void;
     onReject: (id: number) => void;
 };
 
-export default function RequestCard({ request, isExpanded, onToggleExpand, onAccept, onReject }: RequestCardProps) {
+export default function RequestCard({ request, isExpanded, isAcceptDisabled, onToggleExpand, onAccept, onReject }: RequestCardProps) {
     return (
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 transition-all duration-300">
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
@@ -30,6 +33,7 @@ export default function RequestCard({ request, isExpanded, onToggleExpand, onAcc
                     <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-6">
                         <div><strong>Number Of Adults -</strong> {request.numberOfAdults} Adults</div>
                         <div><strong>Number Of Children -</strong> {request.numberOfChildren} Children</div>
+                        <div><strong>Tourist Email -</strong> {request.touristEmail || 'N/A'}</div>
                     </div>
 
                     <div>
@@ -43,10 +47,9 @@ export default function RequestCard({ request, isExpanded, onToggleExpand, onAcc
                         <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Your Charge</label>
                             <div className="w-48 p-2 bg-gray-100 border border-gray-300 rounded-md text-gray-800">
-                                {request.tripPayment}$
+                                ${request.tripPayment}
                             </div>
                         </div>
-                        {/* ✨ Button container */}
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => onReject(request.id)}
@@ -56,7 +59,8 @@ export default function RequestCard({ request, isExpanded, onToggleExpand, onAcc
                             </button>
                             <button
                                 onClick={() => onAccept(request.id)}
-                                className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors"
+                                disabled={isAcceptDisabled}
+                                className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
                                 Accept
                             </button>
