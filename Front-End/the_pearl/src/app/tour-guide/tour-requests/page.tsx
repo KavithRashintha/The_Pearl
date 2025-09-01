@@ -5,6 +5,7 @@ import RequestCard from '@/app/tour-guide/components/request_card';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
+import emailjs from '@emailjs/browser';
 
 export type TourRequest = {
     id: number;
@@ -29,6 +30,14 @@ type DecodedToken = {
     exp: number;
 };
 
+type TourGuideProfile = {
+    name: string;
+    email: string;
+    tour_guide: {
+        telephone: string;
+    }
+}
+
 export default function TourRequestsPage() {
     const [requests, setRequests] = useState<TourRequest[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,6 +46,7 @@ export default function TourRequestsPage() {
     const [accessToken, setAccessToken] = useState<string | undefined>();
     const [tourGuideId, setTourGuideId] = useState<number | null>(null);
     const [hasActiveTrip, setHasActiveTrip] = useState(false);
+    const [tourGuideProfile, setTourGuideProfile] = useState<TourGuideProfile | null>(null);
 
     useEffect(() => {
         const token = Cookies.get('accessToken');
@@ -59,24 +69,31 @@ export default function TourRequestsPage() {
         const fetchRequests = async () => {
             try {
                 const headers = { Authorization: `Bearer ${accessToken}` };
-                const [requestsResponse, activeTripResponse] = await Promise.all([
+                const [requestsResponse, activeTripResponse, guideProfileResponse] = await Promise.all([
                     fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/pending`, { headers }),
-                    fetch(`/api/trips/tour-guide/${tourGuideId}/has-active-trip`, { headers })
+                    fetch(`http://localhost:8003/api/trips/tour-guide/${tourGuideId}/has-active-trip`, { headers }),
+                    fetch(`http://localhost:8003/api/tour-guide/${tourGuideId}/profile`, { headers })
                 ]);
 
                 if (!requestsResponse.ok) throw new Error('Failed to fetch tour requests.');
+
                 if (activeTripResponse.ok) {
                     const hasActive = await activeTripResponse.json();
-                    setHasActiveTrip(hasActive);
+                    setHasActiveTrip(hasActive === true);
+                }
+
+                if (guideProfileResponse.ok) {
+                    const guideData = await guideProfileResponse.json();
+                    setTourGuideProfile(guideData);
                 }
 
                 const data: TourRequest[] = await requestsResponse.json();
 
                 const touristIds = [...new Set(data.map(req => req.touristId))];
                 const touristPromises = touristIds.map(id =>
-                    fetch(`http://localhost:8003/api/tourists/${id}/profile`, { headers }).then(res => res.json())
+                    fetch(`http://localhost:8003/api/tourists/${id}/profile`, { headers }).then(res => res.ok ? res.json() : null)
                 );
-                const tourists = await Promise.all(touristPromises);
+                const tourists = (await Promise.all(touristPromises)).filter(Boolean);
                 const touristMap = new Map(tourists.map(t => [t.id, { email: t.email, phone: t.tourist?.telephone }]));
 
                 const enrichedRequests = data.map(req => ({
@@ -99,7 +116,24 @@ export default function TourRequestsPage() {
         setExpandedRequestId(prevId => (prevId === requestId ? null : requestId));
     };
 
-    const updateTripStatus = async (tripId: number, status: 'Accepted' | 'Rejected') => {
+    const sendConfirmationEmail = async (request: TourRequest, guideProfile: TourGuideProfile) => {
+        const templateParams = {
+            tourist_name: request.touristName,
+            email: request.touristEmail,
+            name: guideProfile.name,
+            guide_email: guideProfile.email,
+            guide_phone: guideProfile.tour_guide.telephone,
+        };
+
+        await emailjs.send(
+            'service_yplt11j',
+            'template_3u5wm2s',
+            templateParams,
+            '9vQugrlxpfHpeQLs2'
+        );
+    };
+
+    const updateTripStatus = async (tripId: number, status: 'Accepted' | 'Rejected', request: TourRequest) => {
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
@@ -116,7 +150,18 @@ export default function TourRequestsPage() {
                 throw new Error(`Failed to ${status.toLowerCase()} the request.`);
             }
 
-            setRequests(prevRequests => prevRequests.filter(request => request.id !== tripId));
+            if (status === 'Accepted' && tourGuideProfile && request.touristEmail) {
+                await toast.promise(
+                    sendConfirmationEmail(request, tourGuideProfile),
+                    {
+                        loading: 'Sending confirmation email...',
+                        success: <b>Confirmation email sent!</b>,
+                        error: <b>Could not send email.</b>,
+                    }
+                );
+            }
+
+            setRequests(prevRequests => prevRequests.filter(req => req.id !== tripId));
             toast.success(`Request has been ${status.toLowerCase()}.`);
 
         } catch (error: any) {
@@ -124,12 +169,12 @@ export default function TourRequestsPage() {
         }
     };
 
-    const handleAcceptRequest = (requestId: number) => {
-        updateTripStatus(requestId, 'Accepted');
+    const handleAcceptRequest = (request: TourRequest) => {
+        updateTripStatus(request.id, 'Accepted', request);
     };
 
-    const handleRejectRequest = (requestId: number) => {
-        updateTripStatus(requestId, 'Rejected');
+    const handleRejectRequest = (request: TourRequest) => {
+        updateTripStatus(request.id, 'Rejected', request);
     };
 
     const renderContent = () => {
@@ -152,8 +197,8 @@ export default function TourRequestsPage() {
                         request={request}
                         isExpanded={expandedRequestId === request.id}
                         onToggleExpand={handleToggleExpand}
-                        onAccept={handleAcceptRequest}
-                        onReject={handleRejectRequest}
+                        onAccept={() => handleAcceptRequest(request)}
+                        onReject={() => handleRejectRequest(request)}
                         isAcceptDisabled={hasActiveTrip}
                     />
                 ))}
@@ -177,3 +222,4 @@ export default function TourRequestsPage() {
         </main>
     );
 }
+

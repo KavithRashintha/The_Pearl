@@ -7,8 +7,8 @@ type RequestCardProps = {
     isExpanded: boolean;
     isAcceptDisabled: boolean;
     onToggleExpand: (id: number) => void;
-    onAccept: (id: number) => void;
-    onReject: (id: number) => void;
+    onAccept: (request: TourRequest) => void;
+    onReject: (request: TourRequest) => void;
 };
 
 export default function RequestCard({ request, isExpanded, isAcceptDisabled, onToggleExpand, onAccept, onReject }: RequestCardProps) {
@@ -34,6 +34,7 @@ export default function RequestCard({ request, isExpanded, isAcceptDisabled, onT
                         <div><strong>Number Of Adults -</strong> {request.numberOfAdults} Adults</div>
                         <div><strong>Number Of Children -</strong> {request.numberOfChildren} Children</div>
                         <div><strong>Tourist Email -</strong> {request.touristEmail || 'N/A'}</div>
+                        <div><strong>Tourist Contact -</strong> {request.touristPhone || 'N/A'}</div>
                     </div>
 
                     <div>
@@ -52,13 +53,13 @@ export default function RequestCard({ request, isExpanded, isAcceptDisabled, onT
                         </div>
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={() => onReject(request.id)}
+                                onClick={() => onReject(request)}
                                 className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium transition-colors"
                             >
                                 Reject
                             </button>
                             <button
-                                onClick={() => onAccept(request.id)}
+                                onClick={() => onAccept(request)}
                                 disabled={isAcceptDisabled}
                                 className="px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
