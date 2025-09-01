@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { FiPlus, FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import AddEditDestinationModal from '@/app/admin/components/add_edit_destination_model';
+import AddEditDestinationModal from '@/app/admin/(components)/add_edit_destination_model';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';

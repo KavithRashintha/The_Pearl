@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import CompletedTripCard from '@/app/tour-guide/components/completed_card';
+import CompletedTripCard from '@/app/tour-guide/(components)/completed_card';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';

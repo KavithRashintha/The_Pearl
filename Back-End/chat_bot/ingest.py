@@ -10,7 +10,7 @@ index_name = "rag-chatbot"
 
 def ingest_docs():
     print("Loading CSV document...")
-    loader = CSVLoader(file_path='files/destinations.csv') # Ensure this path is correct
+    loader = CSVLoader(file_path='files/destinations.csv')
     documents = loader.load()
 
     print("Creating embeddings and uploading to Pinecone...")

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import RequestCard from '@/app/tour-guide/components/request_card';
+import RequestCard from '@/app/tour-guide/(components)/request_card';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';

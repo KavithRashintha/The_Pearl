@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import TripRow from '@/app/admin/components/trip_card';
+import TripRow from '@/app/admin/(components)/trip_card';
 
 export type Trip = {
     id: number;

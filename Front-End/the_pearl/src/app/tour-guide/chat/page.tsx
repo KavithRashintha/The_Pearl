@@ -1,23 +1,49 @@
 "use client";
 
-import ChatWindow, { ChatPartner } from '@/components/chat_window';
+import { useState } from 'react';
+import ChatWindow from '@/components/chat_window';
+
+const dummyCurrentUser = {
+    uid: 'guide_user_456',
+    displayName: 'Nimal Perera',
+    email: 'nimal.p@example.com',
+    role: 'guide',
+    photoURL: 'https://i.pravatar.cc/150?u=nimal_perera',
+};
+
+const dummyContacts = [
+    {
+        id: 'chat_1',
+        participantInfo: {
+            guide_user_456: { displayName: 'Nimal Perera' },
+            tourist_user_123: { displayName: 'Frank Paul' },
+        },
+    },
+    {
+        id: 'chat_2',
+        participantInfo: {
+            guide_user_456: { displayName: 'Nimal Perera' },
+            tourist_user_abc: { displayName: 'John Doe' },
+        },
+    },
+    {
+        id: 'chat_3',
+        participantInfo: {
+            guide_user_456: { displayName: 'Nimal Perera' },
+            tourist_user_def: { displayName: 'Deepak Singh' },
+        },
+    },
+];
 
 export default function TourGuideChatPage() {
-    const touristContacts: ChatPartner[] = [
-        { id: 'tourist_1', name: 'Frank Paul', details: 'Russia' },
-        { id: 'tourist_2', name: 'John Doe', details: 'England' },
-        { id: 'tourist_3', name: 'Deepak Singh', details: 'India' },
-    ];
-
-    const currentUserName = "Nimal Perera";
+    const [currentUser] = useState(dummyCurrentUser);
+    const [contacts] = useState(dummyContacts);
 
     return (
-        <div className="min-h-screen bg-white p-4 sm:p-8">
-            <ChatWindow
-                contacts={touristContacts}
-                contactListTitle="Tourists Chat"
-                currentUserName={currentUserName}
-            />
-        </div>
+        <ChatWindow
+            contacts={contacts}
+            contactListTitle="Tourist Chats"
+            currentUser={currentUser}
+        />
     );
 }

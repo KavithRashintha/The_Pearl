@@ -23,7 +23,6 @@ app.add_middleware(
 
 @app.get("/", tags=["Root"])
 def read_root():
-    """A simple welcome message for the API root."""
     return {"message": "Welcome to the User Management Service! 👤"}
 
 @app.post("/auth/register/tourist", status_code=status.HTTP_201_CREATED, tags=["Authentication"])
