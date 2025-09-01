@@ -6,6 +6,7 @@ import AddEditGuideModal from '@/app/admin/components/add_edit_tour_guide_model'
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
+import emailjs from '@emailjs/browser';
 
 export type TourGuide = {
     id: number;
@@ -36,21 +37,15 @@ export default function TourGuidesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedGuide, setSelectedGuide] = useState<TourGuide | null>(null);
-    const [accessToken, setAccessToken] = useState();
+    const [accessToken, setAccessToken] = useState<string | undefined>();
 
     const itemsPerPage = 8;
 
     useEffect(() => {
         const token = Cookies.get('accessToken');
         if (token) {
-            try {
-                const decoded = jwtDecode<DecodedToken>(token);
-                setAccessToken(token);
-            } catch (e) {
-                console.error('Invalid token');
-            }
+            setAccessToken(token);
         }
-
         fetchTourGuides();
     }, []);
 
@@ -83,6 +78,21 @@ export default function TourGuidesPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedGuide(null);
+    };
+
+    const sendRegistrationEmail = async (formData: any) => {
+        const templateParams = {
+            guide_name: formData.name,
+            guide_email: formData.email,
+            password: formData.password,
+        };
+
+        await emailjs.send(
+            'service_yplt11j',
+            'template_ol7qdyj',
+            templateParams,
+            '9vQugrlxpfHpeQLs2'
+        );
     };
 
     const handleSubmitGuide = async (formData: any) => {
@@ -132,6 +142,18 @@ export default function TourGuidesPage() {
                 const errorMessage = errorData.detail?.[0]?.msg || `Failed to ${modalMode} tour guide.`;
                 throw new Error(errorMessage);
             }
+
+            if (modalMode === 'add') {
+                await toast.promise(
+                    sendRegistrationEmail(formData),
+                    {
+                        loading: 'Sending registration email...',
+                        success: <b>Registration email sent!</b>,
+                        error: <b>Could not send email.</b>,
+                    }
+                );
+            }
+
             toast.success(`Tour guide ${modalMode === 'add' ? 'added' : 'updated'} successfully!`);
             handleCloseModal();
             fetchTourGuides();
@@ -145,6 +167,7 @@ export default function TourGuidesPage() {
             toast.promise(
                 fetch(`http://localhost:8003/api/tour-guide/delete-tour-guide/${guideId}`, {
                     method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
                 }).then(response => {
                     if (!response.ok) throw new Error('Deletion failed.');
                 }),
@@ -246,3 +269,4 @@ export default function TourGuidesPage() {
         </div>
     );
 }
+

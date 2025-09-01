@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { FiX, FiUploadCloud } from 'react-icons/fi';
 import { Destination } from '@/app/admin/destinations/page';
 import Image from 'next/image';
-import { toast } from 'react-toastify'; // NEW: For better feedback
+import { toast } from 'react-toastify';
 
 type ModalProps = {
     isOpen: boolean;
@@ -19,8 +19,17 @@ type FormState = Omit<Destination, 'id' | 'details'> & {
 };
 
 const destinationTypes = ["Historical", "Beach", "Attraction", "Cultural"];
-const provinces = ["Central", "Eastern", "Southern", "Western", "Northern"];
-const districts = ["Galle", "Matale", "Ampara", "Nuwara Eliya"];
+const provinces = [
+    "Central", "Eastern", "Northern", "Southern", "Western",
+    "North Western", "North Central", "Uva", "Sabaragamuwa"
+]
+
+const districts = [
+        "Colombo", "Gampaha", "Kalutara", "Kandy", "Matale", "Nuwara Eliya", "Galle",
+        "Matara", "Hambantota", "Jaffna", "Kilinochchi", "Mannar", "Vavuniya", "Mullaitivu", "Batticaloa", "Ampara", "Trincomalee",
+        "Kurunegala", "Puttalam", "Anuradhapura", "Polonnaruwa", "Badulla", "Monaragala", "Ratnapura", "Kegalle"
+    ]
+;
 const climates = ["Dry", "Wet", "Intermediate"];
 const allActivities = ["Hiking", "Surfing", "Photography", "Relaxing", "Cycling", "Diving", "Safari", "Yoga & Meditation", "Adventure", "Cultural"];
 

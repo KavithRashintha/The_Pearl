@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import CSVLoader
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
 
 load_dotenv()
@@ -10,7 +10,7 @@ index_name = "rag-chatbot"
 
 def ingest_docs():
     print("Loading CSV document...")
-    loader = CSVLoader(file_path='files/destinations.csv')
+    loader = CSVLoader(file_path='files/destinations.csv') # Ensure this path is correct
     documents = loader.load()
 
     print("Creating embeddings and uploading to Pinecone...")
