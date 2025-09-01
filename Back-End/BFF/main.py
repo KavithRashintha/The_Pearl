@@ -51,6 +51,10 @@ async def get_completed_trips_by_tour_guide(tour_guide_id: int):
 async def get_completed_trips(touristId: int):
     return await proxyService.get_completed_trips_by_tourist(touristId)
 
+@app.get("/api/trips/trip-by-tourist/{touristId}/accepted", response_model=List[proxySchema.Trip], tags=["Trips"])
+async def get_accepted_trips(touristId: int):
+    return await proxyService.get_accepted_trips_by_tourist(touristId)
+
 @app.patch('/api/trips/{tripId}/update-trip-status', response_model=proxySchema.Trip, tags=["Trips"])
 async def update_trip_status(tripId: int, status_update: proxySchema.TripStatusUpdate):
     return await proxyService.update_trip_status(tripId, status_update)
@@ -58,6 +62,14 @@ async def update_trip_status(tripId: int, status_update: proxySchema.TripStatusU
 @app.patch('/api/trips/{tripId}/update-payment-status', response_model=proxySchema.Trip, tags=["Trips"])
 async def update_payment_status(tripId: int, payment_update: proxySchema.TripPaymentStatusUpdate):
     return await proxyService.update_payment_status(tripId, payment_update)
+
+@app.get("/api/trips/tourist/{tourist_id}/has-active-trip", response_model=dict, tags=["Trips"])
+async def check_tourist_has_active_trip(tourist_id: int):
+    return await proxyService.check_tourist_has_active_trip(tourist_id)
+
+@app.get("/api/trips/tour-guide/{tour_guide_id}/has-active-trip", response_model=dict, tags=["Trips"])
+async def check_tour_guide_has_active_trip(tour_guide_id: int):
+    return await proxyService.check_tour_guide_has_active_trip(tour_guide_id)
 
 @app.post("/api/destinations/add", response_model=proxySchema.Destination, tags=["Destinations"])
 async def add_destination(destination: proxySchema.DestinationCreated):

@@ -6,6 +6,7 @@ import { TripFormData } from '@/app/tourist/trips/page';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
+import ActiveTripCard from '@/app/tourist/components/active_trip_card';
 
 type Step1Props = {
     nextStep: () => void;
@@ -24,6 +25,21 @@ type DecodedToken = {
 type Destination = { id: number; name: string; image: string; };
 type WishlistItem = { id: number; touristId: number; destinations: number[]; };
 type SelectedDestinationsItem = { id: number; touristId: number; selectedDestinations: number[]; };
+export type Trip = {
+    id: number;
+    touristId: number;
+    tourGuideId: number;
+    touristCountry: string;
+    destinations: string[];
+    startDate: string;
+    numberOfDays: number;
+    numberOfAdults: number;
+    numberOfChildren: number;
+    tripStatus: string;
+    paymentStatus: string;
+    touristName?: string;
+    tourGuideName?: string;
+};
 
 export default function Step1_SelectDestinations({ nextStep, setFormData, openChat }: Step1Props) {
     const [wishlist, setWishlist] = useState<Destination[]>([]);
@@ -31,7 +47,10 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
     const [loading, setLoading] = useState(true);
     const [selectedLoading, setSelectedLoading] = useState(true);
     const [touristId, setTouristId] = useState<number | null>(null);
-    const [accessToken, setAccessToken] = useState();
+    const [accessToken, setAccessToken] = useState<string | undefined>();
+    const [activeTrips, setActiveTrips] = useState<Trip[]>([]);
+    const [hasActiveTrip, setHasActiveTrip] = useState(false);
+    const [expandedTripId, setExpandedTripId] = useState<number | null>(null);
 
     useEffect(() => {
         const token = Cookies.get('accessToken');
@@ -48,26 +67,39 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
 
     useEffect(() => {
         const fetchData = async () => {
-            if (touristId == null) {
+            if (touristId === null) {
+                setLoading(false);
+                setSelectedLoading(false);
                 return;
             }
             try {
-                const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
-                if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
+                const headers = { Authorization: `Bearer ${accessToken}` };
+                const [
+                    wishlistResponse,
+                    selectedResponse,
+                    activeTripStatusResponse,
+                    acceptedTripsResponse
+                ] = await Promise.all([
+                    fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`, { headers }),
+                    fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`, { headers }),
+                    fetch(`http://127.0.0.1:8003/api/trips/tourist/${touristId}/has-active-trip`, { headers }),
+                    fetch(`http://127.0.0.1:8003/api/trips/trip-by-tourist/${touristId}/accepted`, { headers })
+                ]);
 
-                const wishlistData: WishlistItem = await wishlistResponse.json();
-                if (wishlistData?.destinations?.length > 0) {
-                    const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
-                        const destinationResponse = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${destinationId}`);
-                        return destinationResponse.ok ? await destinationResponse.json() : null;
-                    });
-                    const destinations = await Promise.all(destinationPromises);
-                    setWishlist(destinations.filter(dest => dest !== null) as Destination[]);
+                if (wishlistResponse.ok) {
+                    const wishlistData: WishlistItem | null = await wishlistResponse.json();
+                    if (wishlistData?.destinations?.length > 0) {
+                        const destinationPromises = wishlistData.destinations.map(async (destinationId) => {
+                            const destinationResponse = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${destinationId}`);
+                            return destinationResponse.ok ? await destinationResponse.json() : null;
+                        });
+                        const destinations = await Promise.all(destinationPromises);
+                        setWishlist(destinations.filter(dest => dest !== null) as Destination[]);
+                    }
                 }
 
-                const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
                 if (selectedResponse.ok) {
-                    const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+                    const selectedData: SelectedDestinationsItem | null = await selectedResponse.json();
                     if (selectedData?.selectedDestinations?.length > 0) {
                         const selectedPromises = selectedData.selectedDestinations.map(async (destinationId) => {
                             const destinationResponse = await fetch(`http://127.0.0.1:8003/api/destinations/destination/${destinationId}`);
@@ -77,6 +109,17 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                         setSelectedDestinations(selectedDests.filter(dest => dest !== null) as Destination[]);
                     }
                 }
+
+                if (activeTripStatusResponse.ok) {
+                    const hasTrip = await activeTripStatusResponse.json();
+                    setHasActiveTrip(hasTrip);
+                }
+
+                if (acceptedTripsResponse.ok) {
+                    const acceptedData: Trip[] = await acceptedTripsResponse.json();
+                    setActiveTrips(acceptedData);
+                }
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -86,22 +129,29 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
         };
 
         fetchData();
-    }, [touristId]);
+    }, [touristId, accessToken]);
+
+    const handleToggleExpand = (tripId: number) => {
+        setExpandedTripId(prevId => (prevId === tripId ? null : tripId));
+    };
 
     const handleAddToSelected = async (destinationId: number) => {
-
+        if (!touristId) {
+            toast.error("Please log in to add destinations.");
+            return;
+        }
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         };
 
         try {
-            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
+            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`, { headers });
             if (selectedResponse.ok) {
-                const selectedData: SelectedDestinationsItem = await selectedResponse.json();
+                const selectedData: SelectedDestinationsItem | null = await selectedResponse.json();
 
-                if(!selectedData){
-                    const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations/add', {
+                if(!selectedData || !selectedData.selectedDestinations) {
+                    const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations', {
                         method: 'POST',
                         headers: headers,
                         body: JSON.stringify({ touristId: touristId, selectedDestinations: [destinationId] })
@@ -110,8 +160,17 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                         const destinationToAdd = wishlist.find(dest => dest.id === destinationId);
                         if (destinationToAdd) {
                             setSelectedDestinations([destinationToAdd]);
+                            toast.success("Added to Selected List!");
                         }
+                    } else {
+                        throw new Error('Failed to create selected list.');
                     }
+                    return;
+                }
+
+                if (selectedData.selectedDestinations.includes(destinationId)) {
+                    toast.info("Destination is already in your selected list.");
+                    return;
                 }
 
                 const updatedSelected = [...selectedData.selectedDestinations, destinationId];
@@ -127,25 +186,44 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                     const destinationToAdd = wishlist.find(dest => dest.id === destinationId);
                     if (destinationToAdd) {
                         setSelectedDestinations(prev => [...prev, destinationToAdd]);
+                        toast.success("Added to Selected List!");
                     }
+                } else {
+                    throw new Error('Failed to update selected list.');
                 }
-            }  else {
+            } else if (selectedResponse.status === 404) {
+                const createResponse = await fetch('http://127.0.0.1:8003/api/selected-destinations', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ touristId: touristId, selectedDestinations: [destinationId] })
+                });
+                if (createResponse.ok) {
+                    const destinationToAdd = wishlist.find(dest => dest.id === destinationId);
+                    if (destinationToAdd) {
+                        setSelectedDestinations([destinationToAdd]);
+                        toast.success("Added to Selected List!");
+                    }
+                } else {
+                    throw new Error('Failed to create selected list.');
+                }
+            } else {
                 throw new Error('Failed to get the selected destinations');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding to selected destinations:', error);
+            toast.error(error.message || 'Could not add to selected list.');
         }
     };
 
     const handleRemoveFromSelected = async (destinationId: number) => {
-
+        if (!touristId) return;
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         };
 
         try {
-            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`);
+            const selectedResponse = await fetch(`http://127.0.0.1:8003/api/selected-destinations/${touristId}`, { headers });
             if (!selectedResponse.ok) throw new Error('Failed to fetch selected destinations');
             const selectedData: SelectedDestinationsItem = await selectedResponse.json();
             const updatedSelected = selectedData.selectedDestinations.filter(id => id !== destinationId);
@@ -159,21 +237,23 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
             );
             if (updateResponse.ok) {
                 setSelectedDestinations(prev => prev.filter(dest => dest.id !== destinationId));
+                toast.success("Removed from Selected List.");
             }
         } catch (error) {
             console.error('Error removing from selected destinations:', error);
+            toast.error("Could not remove from selected list.");
         }
     };
 
     const handleRemoveFromWishlist = async (destinationId: number) => {
-
+        if (!touristId) return;
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         };
 
         try {
-            const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`);
+            const wishlistResponse = await fetch(`http://127.0.0.1:8003/api/wishlist/${touristId}`, { headers });
             if (!wishlistResponse.ok) throw new Error('Failed to fetch wishlist');
             const wishlistData: WishlistItem = await wishlistResponse.json();
             const updatedDestinations = wishlistData.destinations.filter(id => id !== destinationId);
@@ -184,13 +264,19 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
             });
             if (updateResponse.ok) {
                 setWishlist(prev => prev.filter(dest => dest.id !== destinationId));
+                toast.success("Removed from Dream Bucket.");
             }
         } catch (error) {
             console.error('Error removing from wishlist:', error);
+            toast.error("Could not remove from wishlist.");
         }
     };
 
     const handleProceed = () => {
+        if (hasActiveTrip) {
+            toast.error("You cannot create a new trip while you have an active one.");
+            return;
+        }
         setFormData(prevData => ({
             ...prevData,
             destinations: selectedDestinations.map(d => ({ id: d.id, name: d.name }))
@@ -209,6 +295,23 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                     <FiWind size={24} />
                 </button>
             </div>
+
+            {activeTrips.length > 0 && (
+                <div className="mb-12">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Active Trip(s)</h2>
+                    <div className="space-y-4">
+                        {activeTrips.map(trip => (
+                            <ActiveTripCard
+                                key={trip.id}
+                                trip={trip}
+                                isExpanded={expandedTripId === trip.id}
+                                onToggleExpand={handleToggleExpand}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 border border-gray-200">
                     <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-violet-600 mt-1">Dream Bucket</h2>
@@ -248,7 +351,7 @@ export default function Step1_SelectDestinations({ nextStep, setFormData, openCh
                         </div>
                     )}
                     <div className="mt-6 md:mt-8 flex justify-center">
-                        <button onClick={handleProceed} disabled={selectedDestinations.length === 0} className="w-full px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:bg-gray-300 transition-colors font-medium">Proceed</button>
+                        <button onClick={handleProceed} disabled={selectedDestinations.length === 0 || hasActiveTrip} className="w-full px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:bg-gray-400 transition-colors font-medium">Proceed</button>
                     </div>
                 </div>
             </div>

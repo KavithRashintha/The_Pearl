@@ -30,7 +30,7 @@ export default function AcceptedTripCard({ trip, isExpanded, onToggleExpand, onS
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 transition-all duration-300">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 transition-all duration-300 text-gray-600 pt-8">
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 <div><strong>Person -</strong> {trip.touristName}</div>
                 <div><strong>From -</strong> {trip.touristCountry}</div>
@@ -49,11 +49,12 @@ export default function AcceptedTripCard({ trip, isExpanded, onToggleExpand, onS
                     <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-6">
                         <div><strong>Number Of Adults -</strong> {trip.numberOfAdults} Adults</div>
                         <div><strong>Number Of Children -</strong> {trip.numberOfChildren} Children</div>
-                        <div className="col-span-2"><strong>Passport Number -</strong> {trip.touristPassportNumber}</div>
+                        <div><strong>Tourist Email -</strong> {trip.touristEmail || 'N/A'}</div>
+                        <div><strong>Passport Number -</strong> {trip.touristPassportNumber}</div>
                     </div>
 
                     <div>
-                        <h3 className="text-lg font-semibold text-violet-600 mb-2">Destinations</h3>
+                        <h3 className="text-lg font-semibold text-violet-600 mb-4 mt-2">Destinations</h3>
                         <ul className="list-disc list-inside grid grid-cols-2 md:grid-cols-3 gap-2 text-gray-600">
                             {trip.destinations.map(dest => <li key={dest}>{dest}</li>)}
                         </ul>

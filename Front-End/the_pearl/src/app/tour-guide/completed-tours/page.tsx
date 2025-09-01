@@ -98,8 +98,8 @@ export default function CompletedToursPage() {
 
     return (
         <main className="p-8 md:p-12 bg-white flex-1">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Completed Tours</h1>
-            <hr className="border-violet-300 border-t-2 w-32 mb-10" />
+            <h1 className="text-4xl font-bold text-royal-purple mb-2">Completed Tours</h1>
+            <hr className="border-violet-700 border-t-2 w-full mb-10 mt-4" />
 
             {renderContent()}
         </main>

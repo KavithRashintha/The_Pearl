@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FiMessageSquare, FiSave, FiXCircle } from 'react-icons/fi';
+import { FiMessageSquare, FiSave, FiXCircle, FiCamera } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -41,7 +41,9 @@ type Trip = {
 
 const calculateAge = (birthDateString: string): number | null => {
     if (!birthDateString) return null;
-    const birthDate = new Date(birthDateString);
+    const birthDate = new Date(`${birthDateString}T00:00:00`);
+    if (isNaN(birthDate.getTime())) return null;
+
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
@@ -87,6 +89,9 @@ export default function MyAccountPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const [trips, setTrips] = useState<Trip[]>([]);
     const [tripsLoading, setTripsLoading] = useState(true);
@@ -155,6 +160,8 @@ export default function MyAccountPage() {
 
     const handleCancel = () => {
         setIsEditing(false);
+        setImageFile(null);
+        setImagePreview(null);
     };
 
     const handleSave = async () => {
@@ -177,10 +184,36 @@ export default function MyAccountPage() {
         }
 
         setIsSaving(true);
+        let finalImageUrl = editableProfile.profilePicture;
+
+        if (imageFile) {
+            try {
+                const presignResponse = await fetch('http://127.0.0.1:8003/api/v1/s3/generate-upload-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_name: imageFile.name, file_type: imageFile.type }),
+                });
+                if (!presignResponse.ok) throw new Error('Could not get upload URL.');
+                const { uploadUrl, publicUrl } = await presignResponse.json();
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': imageFile.type },
+                    body: imageFile,
+                });
+                if (!uploadResponse.ok) throw new Error('Image upload failed.');
+                finalImageUrl = publicUrl;
+            } catch (error: any) {
+                toast.error(error.message);
+                setIsSaving(false);
+                return;
+            }
+        }
 
         const payload = {
             name: editableProfile.name,
             email: editableProfile.email,
+            profilePicture: finalImageUrl,
             passportNumber: editableProfile.tourist.passportNumber,
             country: editableProfile.tourist.country,
             address: editableProfile.tourist.address,
@@ -202,9 +235,12 @@ export default function MyAccountPage() {
             if (!response.ok) {
                 throw new Error('Failed to update profile. Please try again.');
             }
+            const updatedProfile = await response.json();
             toast.success('Profile updated successfully!');
-            setProfile(editableProfile);
+            setProfile(updatedProfile);
             setIsEditing(false);
+            setImageFile(null);
+            setImagePreview(null);
 
         } catch (error: any) {
             toast.error(error.message);
@@ -227,29 +263,36 @@ export default function MyAccountPage() {
         }
     };
 
-    let profileImageUrl = "/images/profile-placeholder.jpg";
-
-    if (profile && profile.profilePicture) {
-        if (profile.profilePicture.startsWith('http')) {
-            profileImageUrl = profile.profilePicture;
-        } else {
-            profileImageUrl = `http://127.0.0.1:8003${profile.profilePicture}`;
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
         }
-    }
+    };
+
+    let profileImageUrl = imagePreview || profile?.profilePicture || "/images/profile-placeholder.jpg";
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 md:px-16 py-12">
                 <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 flex flex-col md:flex-row items-center gap-8 md:gap-12">
                     <div className="flex flex-col items-center text-center md:w-1/3">
-                        <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4">
+                        <div className="relative w-40 h-40 rounded-full overflow-hidden mb-4 group">
                             <Image
                                 src={profileImageUrl}
                                 alt="Profile Picture"
                                 layout="fill"
                                 objectFit="cover"
                                 priority
+                                key={profileImageUrl}
                             />
+                            {isEditing && (
+                                <label htmlFor="profile-picture-upload" className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <FiCamera size={32} />
+                                    <input id="profile-picture-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
+                                </label>
+                            )}
                         </div>
                         {isEditing ? (
                             <input

@@ -1,157 +1,168 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
-import { FiSend } from 'react-icons/fi';
+import { db } from '@/utils/firebase';
+import {
+    collection,
+    query,
+    orderBy,
+    onSnapshot,
+    addDoc,
+    serverTimestamp,
+    doc,
+    updateDoc,
+} from 'firebase/firestore';
+import { Message, PearlUser, Chat } from '@/utils/firestore';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDR1TubACNZnWcVGotjVehzZpDFebnOfOk",
-    authDomain: "the-pearl-app.firebaseapp.com",
-    projectId: "the-pearl-app",
-    storageBucket: "the-pearl-app.firebasestorage.app",
-    messagingSenderId: "298308275070",
-    appId: "1:298308275070:web:c5daabdf1bacb23200c12f",
-    measurementId: "G-PXKLNHNEG4"
-};
+export interface ChatContact extends Pick<Chat, 'id' | 'participantInfo'> {}
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-type Message = {
-    id?: string;
-    text: string;
-    senderId: string;
-    senderName: string;
-    timestamp: any;
-};
-
-export type ChatPartner = {
-    id: string;
-    name: string;
-    details?: string;
-};
-
-type ChatWindowProps = {
-    contacts: ChatPartner[];
+interface ChatWindowProps {
+    contacts: ChatContact[];
     contactListTitle: string;
-    currentUserName: string;
-};
+    currentUser: PearlUser | null;
+}
 
-export default function ChatWindow({ contacts, contactListTitle, currentUserName }: ChatWindowProps) {
-    const [user, setUser] = useState<User | null>(null);
-    const [selectedContact, setSelectedContact] = useState<ChatPartner | null>(null);
+export default function ChatWindow({ contacts, contactListTitle, currentUser }: ChatWindowProps) {
+    const [activeChat, setActiveChat] = useState<ChatContact | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const messagesEndRef = useRef<null | HTMLDivElement>(null);
-
-    useEffect(() => {
-        signInAnonymously(auth).catch(error => console.error("Anonymous sign-in failed:", error));
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    useEffect(() => {
-        if (contacts.length > 0 && !selectedContact) {
-            setSelectedContact(contacts[0]);
-        }
-    }, [contacts, selectedContact]);
-
-    useEffect(() => {
-        if (user && selectedContact) {
-            const chatId = [user.uid, selectedContact.id].sort().join('_');
-            const messagesRef = collection(db, 'chats', chatId, 'messages');
-            const q = query(messagesRef, orderBy('timestamp'));
-
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const msgs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
-                setMessages(msgs);
-            });
-            return () => unsubscribe();
-        }
-    }, [user, selectedContact]);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    useEffect(() => {
+        if (!activeChat) {
+            setMessages([]);
+            return;
+        }
+
+        const messagesRef = collection(db, 'chats', activeChat.id, 'messages');
+        const q = query(messagesRef, orderBy('createdAt', 'asc'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedMessages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...(doc.data() as Omit<Message, 'id'>),
+            }));
+            setMessages(fetchedMessages);
+        });
+
+        return () => unsubscribe();
+    }, [activeChat]);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user || !selectedContact || newMessage.trim() === '') return;
-        const chatId = [user.uid, selectedContact.id].sort().join('_');
-        const messagesRef = collection(db, 'chats', chatId, 'messages');
-        await addDoc(messagesRef, {
-            text: newMessage,
-            senderId: user.uid,
-            senderName: currentUserName,
-            timestamp: serverTimestamp(),
-        });
-        setNewMessage('');
+        if (newMessage.trim() === '' || !activeChat || !currentUser) return;
+
+        try {
+            const messagesRef = collection(db, 'chats', activeChat.id, 'messages');
+            await addDoc(messagesRef, {
+                text: newMessage,
+                senderId: currentUser.uid,
+                createdAt: serverTimestamp(),
+            });
+
+            const chatDocRef = doc(db, 'chats', activeChat.id);
+            await updateDoc(chatDocRef, {
+                lastMessage: newMessage,
+                lastUpdated: serverTimestamp(),
+            });
+
+            setNewMessage('');
+        } catch (error) {
+            console.error("Error sending message: ", error);
+        }
     };
 
-    if (!user) {
-        return <div className="flex items-center justify-center h-screen">Connecting to Chat...</div>;
-    }
+    const getOtherParticipantName = (chat: ChatContact) => {
+        if (!currentUser || !chat.participantInfo) return "Chat";
+        const otherUserId = Object.keys(chat.participantInfo).find(uid => uid !== currentUser.uid);
+        return otherUserId ? chat.participantInfo[otherUserId].displayName : "Unknown User";
+    };
 
     return (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            <div className="md:col-span-1 lg:col-span-1 bg-white rounded-xl shadow-md border border-gray-200 p-6 h-[80vh] flex flex-col">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{contactListTitle}</h2>
-                <div className="space-y-3 overflow-y-auto">
-                    {contacts.map(contact => (
-                        <button
-                            key={contact.id}
-                            onClick={() => setSelectedContact(contact)}
-                            className={`w-full text-left p-4 rounded-lg transition-colors ${selectedContact?.id === contact.id ? 'bg-violet-100 text-violet-800 font-semibold' : 'hover:bg-gray-100'}`}
-                        >
-                            {contact.name}
-                            {contact.details && <span className="text-sm text-gray-500 ml-2">- {contact.details}</span>}
-                        </button>
-                    ))}
+        <div className="flex h-[calc(100vh-12rem)] w-full gap-6">
+            {/* Left Panel: Contact List */}
+            <div className="w-1/3 flex-shrink-0 rounded-lg bg-white p-4 shadow-lg">
+                <h2 className="mb-4 text-xl font-bold text-gray-800">{contactListTitle}</h2>
+                <div className="flex flex-col gap-2">
+                    {/* --- CHANGE STARTS HERE --- */}
+                    {contacts.length > 0 ? (
+                        contacts.map((contact) => (
+                            <button
+                                key={contact.id}
+                                onClick={() => setActiveChat(contact)}
+                                className={`w-full rounded-lg p-3 text-left text-lg font-medium transition-colors ${
+                                    activeChat?.id === contact.id
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                            >
+                                {getOtherParticipantName(contact)}
+                            </button>
+                        ))
+                    ) : (
+                        <p className="mt-4 text-center text-gray-500">
+                            No chats found.
+                        </p>
+                    )}
+                    {/* --- CHANGE ENDS HERE --- */}
                 </div>
             </div>
 
-            <div className="md:col-span-2 lg:col-span-3 bg-white rounded-xl shadow-md border border-gray-200 h-[80vh] flex flex-col">
-                {selectedContact ? (
+            {/* Right Panel: Chat Window */}
+            <div className="flex w-2/3 flex-col rounded-lg bg-white shadow-lg">
+                {activeChat && currentUser ? (
                     <>
-                        <header className="bg-violet-600 text-white p-4 rounded-t-xl">
-                            <h3 className="text-xl font-semibold">Chat With {selectedContact.name} {selectedContact.details && `from ${selectedContact.details}`}</h3>
-                        </header>
-                        <main className="flex-1 p-6 overflow-y-auto space-y-2">
-                            {messages.map(msg => (
-                                <div key={msg.id} className={`flex flex-col ${msg.senderId === user.uid ? 'items-end' : 'items-start'}`}>
-                                    {msg.senderId !== user.uid && (
-                                        <span className="text-xs text-gray-500 ml-3 mb-1">{msg.senderName}</span>
-                                    )}
-                                    <p className={`max-w-lg px-4 py-2 rounded-2xl ${msg.senderId === user.uid ? 'bg-violet-500 text-white' : 'bg-gray-200 text-gray-800'}`}>
+                        {/* Chat Header */}
+                        <div className="rounded-t-lg bg-purple-600 p-4 text-white">
+                            <h2 className="text-xl font-bold">Chat With {getOtherParticipantName(activeChat)}</h2>
+                        </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-grow space-y-4 overflow-y-auto p-4">
+                            {messages.map((msg) => (
+                                <div
+                                    key={msg.id}
+                                    className={`flex ${msg.senderId === currentUser.uid ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-md rounded-2xl px-4 py-2 ${
+                                            msg.senderId === currentUser.uid
+                                                ? 'rounded-br-none bg-purple-500 text-white'
+                                                : 'rounded-bl-none bg-gray-200 text-gray-800'
+                                        }`}
+                                    >
                                         {msg.text}
-                                    </p>
+                                    </div>
                                 </div>
                             ))}
                             <div ref={messagesEndRef} />
-                        </main>
-                        <footer className="p-4 border-t">
-                            <form onSubmit={handleSendMessage} className="relative">
+                        </div>
+
+                        {/* Message Input Form */}
+                        <form onSubmit={handleSendMessage} className="border-t p-4">
+                            <div className="relative">
                                 <input
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Type your message..."
-                                    className="w-full py-3 pl-4 pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                    className="w-full rounded-full border bg-gray-50 py-3 pl-5 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 />
-                                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-violet-600 rounded-full hover:bg-violet-100">
-                                    <FiSend size={24} />
+                                <button type="submit" className="absolute inset-y-0 right-0 flex items-center pr-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7 text-purple-600 transition-transform hover:scale-110">
+                                        <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                                    </svg>
                                 </button>
-                            </form>
-                        </footer>
+                            </div>
+                        </form>
                     </>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                        <p>Select a contact to start chatting.</p>
+                    <div className="flex h-full items-center justify-center">
+                        <p className="text-xl text-gray-400">Select a chat to start messaging</p>
                     </div>
                 )}
             </div>
