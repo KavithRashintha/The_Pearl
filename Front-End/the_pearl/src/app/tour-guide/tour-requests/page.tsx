@@ -79,7 +79,8 @@ export default function TourRequestsPage() {
 
                 if (activeTripResponse.ok) {
                     const hasActive = await activeTripResponse.json();
-                    setHasActiveTrip(hasActive === true);
+                    setHasActiveTrip(hasActive.has_active_trip);
+                    console.log(hasActive.has_active_trip);
                 }
 
                 if (guideProfileResponse.ok) {
@@ -222,4 +223,3 @@ export default function TourRequestsPage() {
         </main>
     );
 }
-
